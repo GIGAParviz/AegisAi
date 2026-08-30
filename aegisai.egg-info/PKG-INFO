@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: aegisai
+Version: 0.1.0
+Summary: Aegis AI reliability platform
+Requires-Python: >=3.11
+Requires-Dist: fastapi
+Requires-Dist: uvicorn[standard]
+Requires-Dist: pydantic-settings
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
