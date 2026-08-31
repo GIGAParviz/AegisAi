@@ -8,7 +8,9 @@ dependencies = [
     "fastapi",
     "uvicorn[standard]",
     "pydantic-settings",
-    "psutil"
+    "psutil",
+    "redis>=8.1.0",
+    "qdrant-client>=1.19.0",
 ]
 
 [project.optional-dependencies]

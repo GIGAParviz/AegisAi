@@ -1,38 +1,20 @@
-# Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
+*.egg-info/
+.eggs/
+.hermes
 
-# Virtual environment
-.agies-env/
-agies-env/
+.venv/
+venv/
 
-
-# Environment variables
 .env
+.env.*
 
-# IDE
+.pytest_cache/
+
+
 .vscode/
 .idea/
 
-# OS
 .DS_Store
 Thumbs.db
-
-# Pytest
-.pytest_cache/
-
-# Type checking / linting
-.mypy_cache/
-.ruff_cache/
-
-# Coverage
-.coverage
-htmlcov/
-
-# Hermes agent local state
-.hermes/
-
-
-aegisai.egg-info

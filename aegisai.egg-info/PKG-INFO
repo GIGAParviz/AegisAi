@@ -6,6 +6,7 @@ Requires-Python: >=3.11
 Requires-Dist: fastapi
 Requires-Dist: uvicorn[standard]
 Requires-Dist: pydantic-settings
+Requires-Dist: psutil
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
 Requires-Dist: ruff; extra == "dev"
