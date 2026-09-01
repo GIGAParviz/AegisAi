@@ -116,26 +116,23 @@ _(cron 21:01 — گزارشی از کاربر در این بازبینی ثبت 
 ## 2026-09-01 - Day 3
 
 ### Learn
-- [ ] Containers 101: Docker Desktop/WSL2، image در برابر container (خلاصهٔ مفهومی + لینک‌های رسمی در پیام صبح)
+- [x] Containers 101: Docker Desktop/WSL2, images vs containers — مفهوم مطالعه شد (گزارش کاربر)؛ اجرا → مانده (verdict پایین)
 
 ### Planned
-- [ ] T0.6 CI workflow (`.github/workflows/ci.yml`: ruff + pytest روی 3.11) → `docs/tasks/T0.6-ci-workflow.md` (carry-over از Day 2 — اولویت اول) → **carry-over به 2026-09-02**
-- [ ] T0.5 Docker Desktop (WSL2) + `docker run hello-world` → `docs/tasks/T0.5-docker-desktop.md` → **carry-over به 2026-09-02**
+- [x] T0.6 CI workflow — **بسته شد**: `.github/workflows/ci.yml` روی ریموت (ruff + pytest، Python 3.11، `pip install -e ".[dev]"`)؛ اجرای GitHub Actions از API: **`CI | 4e47b23 | completed | success`**. ۱۰ کامیت از 2026-08-31 ظهر.
+- [ ] T0.5 Docker Desktop — **❌ تأیید نشد؛ re-plan**: Docker Desktop از ویندوز حذف شده (فقط لاگ نصب June 2026 در `%LOCALAPPDATA%\Docker`)؛ `docker` نه در PATH ویندوز و نه داخل WSL2/Ubuntu. WSL2 خودش سالم است (Default Version: 2) → فقط نصب مجدد Desktop لازم است؛ به Day 4/5 موکول شد (دانلود سنگین).
+- [x] LangChain probe (تسک کاربر) — **انجام شد**: mini project در `E:\projs\AegisAI\my_tests\` (main, config, models, service, session)؛ نتیجهٔ کاربر: «خیلی خوبه». این مسیر عمداً gitignored است (`.gitignore` خطوط 10-11: `.my_tests/`, `my_tests/`) → شواهد = فایل‌های لوکال + گزارش کاربر.
 
 ### Report (fill at end of day)
-گزارش کاربر در چت Life-OS ثبت و تطبیق می شود.
+**گزارش کاربر (ثبت 2026-09-02 02:15):** T0.5 و T0.6 انجام شد؛ CI در گیت‌هاب درست کار کرد. ویدئوی اینستا ضبط شد — ادیت مانده و ضبط ویس دردسر زیاد دارد → جستجوی روش سریع/کیفیت‌دار برای ادیت و انیمیشن. کامنت‌های لینکدین ✓. پیشنهاد مصاحبهٔ کاری: جلسهٔ جمعه **۴ سپتامبر** ساعت ۱۴:۳۰. LangChain تست شد و mini project ساخته شد. سلیمی: تماس گرفته شد → جلسهٔ پنج‌شنبه ۳ سپتامبر صبح در شرکت. باشگاه: روزهای زوج (شنبه/دوشنبه/چهارشنبه) ساعت ۱۹:۳۰. شروع برنامهٔ تولید محتوا و بازاریابی برای سایت خودش gymmim.ir.
 
-### Agent verdict (21:00) — فقط شواهد، بدون گزارش کاربر
+### Agent verdict (ثبت 02:15 با شواهد)
 | تسک | وضعیت | مدرک |
 |---|---|---|
-| Learn: Containers 101 | بدون شواهد | هیچ اثری در ریپو؛ Docker در PATH نیست |
-| T0.6 CI workflow | انجام نشده (روز سوم) | پوشهٔ `.github/workflows/` وجود ندارد |
-| T0.5 Docker Desktop | انجام نشده | `docker --version` → command not found؛ Docker Desktop نصب نشده |
+| T0.6 CI workflow | ✅ بسته شد | GitHub API: `CI on 4e47b23 → success`؛ لوکال HEAD = ریموت HEAD |
+| T0.5 Docker Desktop | ❌ باز — نصب مجدد لازم | `docker.exe` یافت نشد (Program Files + WSL)؛ لاگ حذف/نصب قدیمی |
+| LangChain probe | ✅ بسته شد | `my_tests/` موجود (gitignored عمدی) |
 
-- تنها کامیت امروز: `9db9955` (10:38، فقط مستندسازی برنامهٔ Day 3). هیچ کامیت build/CI/Docker ثبت نشد.
-- کار واقعی امروز (شواهد دیسک، نامشمس): **LangChain probe** — یکی از تسک‌های شخصی ثبت‌شده در کامیت `79894ed`. مدرک: `pyproject.toml` +5 دپندنسی (langchain، langchain-openai، langchain-community، langchain-openrouter، python-dotenv) و `uv.lock` ~+2100 خط؛ پوشهٔ `my_tests/` با `lnag.py` (ناتمام — `config = {"configu"}`) و `memory_mng.py` (RunnableWithMessageHistory). همهٔ این‌ها **بدون کامیت** است.
-- ⚠️ **رگرسیون baseline:** `ruff check .` → 2 خطا (F401 unused imports در `my_tests/lnag.py` و `my_tests/memory_mng.py`) — baseline سبز Day 2 شکسته شد. `pytest -q` هنوز 3 passed است.
-- ⚠️ **امنیت:** `api_key` هاردکد در `my_tests/memory_mng.py` — قبل از هر کامیت/push باید به env منتقل و از تاریخ گیت دور بماند.
-- T0.6 سه روز باز شده (Day 2 → 3 → 4) — طبق قاعدهٔ ROADMAP: فردا اجرای قطعی یا re-scope صریح.
-- **فردا (2026-09-02 = Day 4):** carry-over: T0.6 (اولویت اول) + T0.5 + Learn Containers 101؛ برنامهٔ اصلی ROADMAP: Learn SQLAlchemy 2.0 async + T1.2 (user model + Alembic). نکته: T1.1 (async db layer) در شیفت‌ها جا افتاده — یا صف یا re-scope. ضمناً baseline باید سبز بماند (ruff fix در my_tests یا exclude کردن آن).
-
+- پیوند یادگیری: نتیجهٔ LangChain probe («خیلی خوبه» + mini project) ورودی تصمیم مرحلهٔ ۲ یادگیری است — به `streams/learning.md` منتقل شد.
+- ⚠️ از ثبتِ بازبینی ۲۱:۰۰ (کرون): `ruff check .` → 2 خطا در `my_tests/` (F401) — baseline سبز Day 2 شکسته شده؛ و `api_key` هاردکد در `my_tests/memory_mng.py`. **گام صبح Day 4: ruff fix در my_tests + انتقال api_key به `.env`** (قبل از هر کامیت). T0.5 هم سه‌روزه شده → نصب مجدد Docker فردا یا re-scope صریح.
+- **فردا (2026-09-02 = Day 4):** اول: پاکسازی my_tests (ruff + key) → بعد T1.1/T1.2 (Learn: SQLAlchemy async) · ادیت ویدئو (خط تولید جدید) · آماده‌سازی جلسهٔ سلیمی (پنج‌شنبه صبح) · مصاحبهٔ جمعه ۴ سپتامبر ۱۴:۳۰ (تاریخ درست‌شده).
