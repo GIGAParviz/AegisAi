@@ -120,7 +120,7 @@ _(cron 21:01 — گزارشی از کاربر در این بازبینی ثبت 
 
 ### Planned
 - [x] T0.6 CI workflow — **بسته شد**: `.github/workflows/ci.yml` روی ریموت (ruff + pytest، Python 3.11، `pip install -e ".[dev]"`)؛ اجرای GitHub Actions از API: **`CI | 4e47b23 | completed | success`**. ۱۰ کامیت از 2026-08-31 ظهر.
-- [ ] T0.5 Docker Desktop — **❌ تأیید نشد؛ re-plan**: Docker Desktop از ویندوز حذف شده (فقط لاگ نصب June 2026 در `%LOCALAPPDATA%\Docker`)؛ `docker` نه در PATH ویندوز و نه داخل WSL2/Ubuntu. WSL2 خودش سالم است (Default Version: 2) → فقط نصب مجدد Desktop لازم است؛ به Day 4/5 موکول شد (دانلود سنگین).
+- [x] T0.5 Docker — **بسته شد (اصلاح حکم قبلی 2026-09-02)**: کاربر روشن کرد — Docker در دیستروی مجزای WSL به نام `DockerEngine` نصب است و با `wsl -d Dockerengine` اجرا می‌شود. تأیید agent: `wsl -d Dockerengine -- docker --version` → Docker 29.1.3؛ `docker run --rm hello-world` → موفق. (چرا اشتباه رد شد: من فقط PATH ویندوز/Ubuntu را چک کرده بودم.)
 - [x] LangChain probe (تسک کاربر) — **انجام شد**: mini project در `E:\projs\AegisAI\my_tests\` (main, config, models, service, session)؛ نتیجهٔ کاربر: «خیلی خوبه». این مسیر عمداً gitignored است (`.gitignore` خطوط 10-11: `.my_tests/`, `my_tests/`) → شواهد = فایل‌های لوکال + گزارش کاربر.
 
 ### Report (fill at end of day)
