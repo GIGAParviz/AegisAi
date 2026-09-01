@@ -119,6 +119,23 @@ _(cron 21:01 — گزارشی از کاربر در این بازبینی ثبت 
 - [ ] Containers 101: Docker Desktop/WSL2، image در برابر container (خلاصهٔ مفهومی + لینک‌های رسمی در پیام صبح)
 
 ### Planned
-- [ ] T0.6 CI workflow (`.github/workflows/ci.yml`: ruff + pytest روی 3.11) → `docs/tasks/T0.6-ci-workflow.md` (carry-over از Day 2 — اولویت اول)
-- [ ] T0.5 Docker Desktop (WSL2) + `docker run hello-world` → `docs/tasks/T0.5-docker-desktop.md`
+- [ ] T0.6 CI workflow (`.github/workflows/ci.yml`: ruff + pytest روی 3.11) → `docs/tasks/T0.6-ci-workflow.md` (carry-over از Day 2 — اولویت اول) → **carry-over به 2026-09-02**
+- [ ] T0.5 Docker Desktop (WSL2) + `docker run hello-world` → `docs/tasks/T0.5-docker-desktop.md` → **carry-over به 2026-09-02**
+
+### Report (fill at end of day)
+گزارش کاربر در چت Life-OS ثبت و تطبیق می شود.
+
+### Agent verdict (21:00) — فقط شواهد، بدون گزارش کاربر
+| تسک | وضعیت | مدرک |
+|---|---|---|
+| Learn: Containers 101 | بدون شواهد | هیچ اثری در ریپو؛ Docker در PATH نیست |
+| T0.6 CI workflow | انجام نشده (روز سوم) | پوشهٔ `.github/workflows/` وجود ندارد |
+| T0.5 Docker Desktop | انجام نشده | `docker --version` → command not found؛ Docker Desktop نصب نشده |
+
+- تنها کامیت امروز: `9db9955` (10:38، فقط مستندسازی برنامهٔ Day 3). هیچ کامیت build/CI/Docker ثبت نشد.
+- کار واقعی امروز (شواهد دیسک، نامشمس): **LangChain probe** — یکی از تسک‌های شخصی ثبت‌شده در کامیت `79894ed`. مدرک: `pyproject.toml` +5 دپندنسی (langchain، langchain-openai، langchain-community، langchain-openrouter، python-dotenv) و `uv.lock` ~+2100 خط؛ پوشهٔ `my_tests/` با `lnag.py` (ناتمام — `config = {"configu"}`) و `memory_mng.py` (RunnableWithMessageHistory). همهٔ این‌ها **بدون کامیت** است.
+- ⚠️ **رگرسیون baseline:** `ruff check .` → 2 خطا (F401 unused imports در `my_tests/lnag.py` و `my_tests/memory_mng.py`) — baseline سبز Day 2 شکسته شد. `pytest -q` هنوز 3 passed است.
+- ⚠️ **امنیت:** `api_key` هاردکد در `my_tests/memory_mng.py` — قبل از هر کامیت/push باید به env منتقل و از تاریخ گیت دور بماند.
+- T0.6 سه روز باز شده (Day 2 → 3 → 4) — طبق قاعدهٔ ROADMAP: فردا اجرای قطعی یا re-scope صریح.
+- **فردا (2026-09-02 = Day 4):** carry-over: T0.6 (اولویت اول) + T0.5 + Learn Containers 101؛ برنامهٔ اصلی ROADMAP: Learn SQLAlchemy 2.0 async + T1.2 (user model + Alembic). نکته: T1.1 (async db layer) در شیفت‌ها جا افتاده — یا صف یا re-scope. ضمناً baseline باید سبز بماند (ruff fix در my_tests یا exclude کردن آن).
 
