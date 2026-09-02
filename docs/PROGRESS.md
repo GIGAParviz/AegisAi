@@ -136,3 +136,18 @@ _(cron 21:01 — گزارشی از کاربر در این بازبینی ثبت 
 - پیوند یادگیری: نتیجهٔ LangChain probe («خیلی خوبه» + mini project) ورودی تصمیم مرحلهٔ ۲ یادگیری است — به `streams/learning.md` منتقل شد.
 - ⚠️ از ثبتِ بازبینی ۲۱:۰۰ (کرون): `ruff check .` → 2 خطا در `my_tests/` (F401) — baseline سبز Day 2 شکسته شده؛ و `api_key` هاردکد در `my_tests/memory_mng.py`. **گام صبح Day 4: ruff fix در my_tests + انتقال api_key به `.env`** (قبل از هر کامیت). T0.5 هم سه‌روزه شده → نصب مجدد Docker فردا یا re-scope صریح.
 - **فردا (2026-09-02 = Day 4):** اول: پاکسازی my_tests (ruff + key) → بعد T1.1/T1.2 (Learn: SQLAlchemy async) · ادیت ویدئو (خط تولید جدید) · آماده‌سازی جلسهٔ سلیمی (پنج‌شنبه صبح) · مصاحبهٔ جمعه ۴ سپتامبر ۱۴:۳۰ (تاریخ درست‌شده).
+
+---
+
+## 2026-09-02 - Day 4
+
+### Learn
+- [ ] SQLAlchemy 2.0 async: engine, sessionmaker, unit-of-work
+
+### Planned
+- [ ] P4.0 پاکسازی my_tests (اولویت اول، carry-over از verdict Day 3): ruff fix (F401 ×2 در `my_tests/`) + انتقال api_key هاردکد در `my_tests/memory_mng.py` به `.env`
+- [ ] T1.1 لایه دیتابیس async (engine.py + base.py + tests/test_db.py) → `docs/tasks/T1.1-async-db-layer.md` (carry-over از Day 3)
+- [ ] T1.2 مدل User + مهاجرت Alembic → `docs/tasks/T1.2-user-model-alembic.md`
+
+> پیش‌نیاز: `aiosqlite` و `alembic` هنوز در pyproject نیستند — گام صفر هر تسک: `uv add aiosqlite alembic` (aiosqlite به dev).
+> تعهدات بیرونی امروز: آماده‌سازی جلسهٔ سلیمی (پنجشنبه صبح) · ادیت ویدئوی اینستا · باشگاه چهارشنبه ۱۹:۳۰ → ظرفیت build محدود، T1.1 اولویت بر T1.2 است.
