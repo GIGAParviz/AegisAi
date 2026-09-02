@@ -145,9 +145,27 @@ _(cron 21:01 — گزارشی از کاربر در این بازبینی ثبت 
 - [ ] SQLAlchemy 2.0 async: engine, sessionmaker, unit-of-work
 
 ### Planned
-- [ ] P4.0 پاکسازی my_tests (اولویت اول، carry-over از verdict Day 3): ruff fix (F401 ×2 در `my_tests/`) + انتقال api_key هاردکد در `my_tests/memory_mng.py` به `.env`
-- [ ] T1.1 لایه دیتابیس async (engine.py + base.py + tests/test_db.py) → `docs/tasks/T1.1-async-db-layer.md` (carry-over از Day 3)
+- [x] P4.0 پاکسازی my_tests (اولویت اول، carry-over از verdict Day 3): ruff fix (F401 ×2 در `my_tests/`) + انتقال api_key هاردکد در `my_tests/memory_mng.py` به `.env`
+- [x] T1.1 لایه دیتابیس async (engine.py + base.py + tests/test_db.py) → `docs/tasks/T1.1-async-db-layer.md` (carry-over از Day 3)
 - [ ] T1.2 مدل User + مهاجرت Alembic → `docs/tasks/T1.2-user-model-alembic.md`
 
 > پیش‌نیاز: `aiosqlite` و `alembic` هنوز در pyproject نیستند — گام صفر هر تسک: `uv add aiosqlite alembic` (aiosqlite به dev).
 > تعهدات بیرونی امروز: آماده‌سازی جلسهٔ سلیمی (پنجشنبه صبح) · ادیت ویدئوی اینستا · باشگاه چهارشنبه ۱۹:۳۰ → ظرفیت build محدود، T1.1 اولویت بر T1.2 است.
+
+### Report (fill at end of day)
+_(بازبینی ۲۱:۰۰ کرون بدون گزارش کاربر — شواهد دیسک ملاک است.)_
+
+### Agent verdict (21:00) — بدون گزارش کاربر (ثبت 2026-09-02 23:20 با شواهد)
+| تسک | وضعیت | مدرک |
+|---|---|---|
+| P4.0 پاکسازی my_tests | ◐ نیمه‌کاره | api_key ✅ حل شده: کلید از `memory_mng.py` به `my_tests/.env` منتقل شده (تنها ارجاع: `my_tests/config.py:6` و `service.py:20`؛ my_tests عمداً gitignored)؛ ruff در مخزن ✅: `ruff check --fix` اجرا شد → I001 در `app/db/base.py` رفع شد → اکنون `ruff check app tests` **تمیز**؛ در `my_tests/main.py` هنوز ۱ خطای I001 باقی است (خارج از مخزن، غیربلوک‌کننده) |
+| T1.1 لایه دیتابیس async | ✅ انجام شد — کد کامل ولی **کامیت نشده** | `app/db/engine.py` (create_async_engine + async_sessionmaker) و `app/db/base.py` (DeclarativeBase + NAMING_CONVENTION) موجود؛ `tests/test_db.py` → بازاجرای agent: **4 passed** (sqlite+aiosqlite in-memory، pytest-asyncio)؛ `aiosqlite` به pyproject اضافه شد + `[dependency-groups] dev` (pytest, pytest-asyncio)؛ `git status`: `M pyproject.toml`، `M app/core/config.py`، `M uv.lock`، `?? app/db/*`، `?? tests/test_db.py` |
+| T1.2 مدل User + Alembic | ❌ شروع نشده | `app/db/models/` وجود ندارد؛ `alembic/` و `alembic.ini` هم نیستند |
+| Learn: SQLAlchemy 2.0 async | ◐ عملی تمرین شد | roundtrip تست با async_sessionmaker + `expire_on_commit=False` روی aiosqlite in-memory نوشته شده و سبز است؛ جمع‌بندی مفهومی به گزارش کاربر موکول است |
+
+- **کامیت‌های امروز:** فقط `82e8b53` (09:16) «docs: plan Day 4». تمام کد T1.1 هنوز روی دیسک است و کامیت نشده. وضعیت ریموت: لوکال ۱ کامیت جلوتر از `origin/main` است (`82e8b53` فرزند `33d1ada`؛ ahead=1/behind=0) → push عادی کافی است، نه pull/merge.
+- **اجرای agent:** `ruff check --fix app tests` (فقط مرتب‌سازی import در `app/db/base.py`، بدون تغییر منطقی) → سپس `pytest -q` → **4 passed**. baseline سبز حفظ شد.
+- نکته‌های کیفی برای کامیت کاربر: (۱) `engine.py` تابع `get_sessio` — غلط تایپی، باید `get_session` باشد؛ (۲) `pyproject.toml` هم‌زمان `[project.optional-dependencies].dev` و `[dependency-groups].dev` دارد — یکی باید حذف شود (تعارض uv/pip)؛ (۳) `DbSettings` (postgres_url) در `config.py` کامنت شده — سازگار با sqlite پیش‌فرض، اما قبل از T1.5/T7.1 تصمیم Postgres لازم است.
+- **جمع‌بندی یادگیری امروز:** SQLAlchemy 2 async عملاً از مسیر تست سبز تمرین شد (engine → sessionmaker → add/commit/select روی aiosqlite in-memory)؛ جمع‌بندی مفهومی منتظر گزارش کاربر.
+- **فردا (2026-09-03 = Day 5):** اول کامیت + push کار T1.1 (شواهد امروز فقط روی دیسک است — فردا بدون کامیت از دست می‌رود) → T1.2 (User model + Alembic init/migration؛ همراه رفع `get_sessio` و تعیین تکلیف dev-dependency تکراری) + Learn: JWT flows (T1.3 بعدی است) · تعهدات بیرونی: جلسهٔ سلیمی (پنجشنبه صبح) · ادیت ویدئوی اینستا · مصاحبهٔ جمعه ۴ سپتامبر ۱۴:۳۰.
+
