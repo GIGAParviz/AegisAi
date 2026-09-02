@@ -21,3 +21,5 @@ my_tests/
 
 .DS_Store
 Thumbs.db
+# local sqlite db files
+*.db
