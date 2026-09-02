@@ -167,12 +167,13 @@ _(بازبینی ۲۱:۰۰ کرون بدون گزارش کاربر — شواه�
 | تسک | حکم | مدرک (01:10) |
 |---|---|---|
 | T1.1 async DB layer | ✅ **بسته شد** | کامیت `cec316d` «feat: add async database layer»؛ بازاجرای agent: **5 passed** / ruff **All checks passed** |
-| T1.2 پیش‌ groundwork | ◐ در جریان (بدون درخواست!) | روی دیسک: `alembic.ini`، `migrations/`، `app/db/models/`، `tests/test_user_model.py`، +aiosqlite/alembic در pyproject — کامیت نشده؛ یعنی T1.2 نیمه‌کاره شب‌مانده |
+| T1.2 پیش‌ groundwork | ◐ **نصفه — عمداً؛ فردا (Day 5) تکمیل می‌شود (تصریح کاربر)** | روی دیسک + کامیت‌شده همراه T1.1: `alembic.ini`، `migrations/`، `app/db/models/user.py` (UserRole enum + فیلدها ✓)، `tests/test_user_model.py` — مانده: تکمیل migration واقعی + roundtrip کامل + بازبینی اسم ستون `create_at`→`created_at` |
 | رفع ruff باقی‌مانده | ✅ | `ruff check --fix` → 8 خطا (7 fixable) رفع شد؛ الان تمیز |
 | `aegis.db` سرگردان | ✅ هندل شد | `*.db` به .gitignore اضافه شد (فایل sqlite تست لوکال نباید track شود) |
 
 - **نکتهٔ روزِ بد (بی‌تعارف):** «روز بد»ِ تو شامل: یک تسک بسته + یک تسک نیمه‌کاره + باشگاه + برنامهٔ محتوایی gymmim + کامنت لینکدین = یک روز **معمولیِ خوب** در هر پروژهٔ واقعی. استاندارد «فقط تونستم T1.1» را که خودت در تختهٔ شب اول نوشتی بشکن: مقایسه با تابلو، نه با حس.
-- **فردا (2026-09-03 = Day 5، پنج‌شنبه):** ☀️ صبح جلسهٔ سلیمی (اولویت مطلق) · بعدازظهر: T1.2 تکمیل (مدل User + اولین migration + تست‌ها) → تا ۲۱:۰۰ push · ۲۱:۳۰ مرور هفتگی Life OS (اولین) · عصر: ضبط ویدئو gymmim تا ۱۹:۰۰ → باشگاه.
+- **فردا (2026-09-03 = Day 5، پنج‌شنبه):** ☀️ صبح جلسهٔ سلیمی (اولویت مطلق) · بعدازظهر: **T1.2 تکمیل نیمهٔ دوم** (migration واقعی + roundtrip) → push · ۲۱:۳۰ مرور هفتگی Life OS (اولین) · عصر: ضبط ویدئو gymmim تا ۱۹:۰۰ → باشگاه.
+- 🔧 **اشکال‌زدایی CI (شب، توسط agent):** CI روی کامیت‌های `cec316d`/`7ad282d` failure بود درحالی‌که لوکال سبز بود. ریشه: (۱) `pytest-asyncio` فقط در dependency-group uv بود نه در extras `[dev]` که CI نصب می‌کند؛ (۲) **علت اصلی**: pip flat-layout error — دو پکیج سطح‌بالا `app/` و `migrations/` → با `[tool.setuptools.packages.find] include=["app*"]` حل شد. نتیجه: `ae9f375` → **CI success** ✅. درس: CI سبز روی گیت‌هاب ملاک است، نه pytest سبز لوکال — از این به بعد هر push تا تیک سبز دنبال می‌شود.
 | Learn: SQLAlchemy 2.0 async | ◐ عملی تمرین شد | roundtrip تست با async_sessionmaker + `expire_on_commit=False` روی aiosqlite in-memory نوشته شده و سبز است؛ جمع‌بندی مفهومی به گزارش کاربر موکول است |
 
 - **کامیت‌های امروز:** فقط `82e8b53` (09:16) «docs: plan Day 4». تمام کد T1.1 هنوز روی دیسک است و کامیت نشده. وضعیت ریموت: لوکال ۱ کامیت جلوتر از `origin/main` است (`82e8b53` فرزند `33d1ada`؛ ahead=1/behind=0) → push عادی کافی است، نه pull/merge.
