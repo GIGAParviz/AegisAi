@@ -26,25 +26,25 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-class DbSettings(BaseSettings):
-    postgres_host: str = "localhost"
-    postgres_db: str = "aegisai"
-    postgres_user: str = "postgres"
-    postgres_password: str = ""
-    postgres_port: int = 5433
-    environment: str = "development"
+# class DbSettings(BaseSettings):
+#     postgres_host: str = "localhost"
+#     postgres_db: str = "aegisai"
+#     postgres_user: str = "postgres"
+#     postgres_password: str = ""
+#     postgres_port: int = 5433
+#     environment: str = "development"
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
+#     model_config = SettingsConfigDict(
+#         env_file=".env",
+#         env_file_encoding="utf-8",
+#         extra="ignore",
+#     )
 
-    @property
-    def postgres_url(self) -> str:
-        return (
-            f"postgresql+asyncpg://"
-            f"{self.postgres_user}:{self.postgres_password}"
-            f"@{self.postgres_host}:{self.postgres_port}/"
-            f"{self.postgres_db}"
-        )
+#     @property
+#     def postgres_url(self) -> str:
+#         return (
+#             f"postgresql+asyncpg://"
+#             f"{self.postgres_user}:{self.postgres_password}"
+#             f"@{self.postgres_host}:{self.postgres_port}/"
+#             f"{self.postgres_db}"
+#         )
