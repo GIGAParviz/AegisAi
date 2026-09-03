@@ -22,6 +22,9 @@ dependencies = [
     "asyncpg>=0.31.0",
     "aiosqlite>=0.22.1",
     "alembic>=1.19.1",
+    "pyjwt>=2.13.0",
+    "passlib[argon2]>=1.7.4",
+    "email-validator>=2.3.0",
 ]
 
 [project.optional-dependencies]
@@ -36,6 +39,10 @@ include = ["app*"]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"app/api/*.py" = ["B008"]

@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     jwt_alg: str = Field(default="HS256", validation_alias="JWT_ALGORITHM")
 
     access_token_expire_min: int = Field(default=30, validation_alias="ACCESS_TOKEN_EXPIRED_MIN")
+    refresh_token_expire_days: int = Field(default=7, validation_alias="REFRESH_TOKEN_EXPIRED_DAYS")
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
