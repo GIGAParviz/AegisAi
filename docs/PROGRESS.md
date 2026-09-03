@@ -224,4 +224,33 @@ _(بازبینی ۲۱:۰۰ کرون بدون گزارش کاربر — شواه�
 > تعهدات بیرونی امروز: ☀️ صبح جلسهٔ سلیمی (اولویت مطلق) · ۲۱:۳۰ مرور هفتگی Life OS (اولین) · عصر ضبط ویدئو gymmim · مصاحبهٔ جمعه ۴ سپتامبر ۱۴:۳۰ (آماده‌سازی امروز/فردا صبح).
 > با این ظرفیت، T1.3 محتمل است به فردا carry-over شود — اولویت: T1.2 کامل بسته شود و baseline سبز بماند.
 
+---
+
+## 2026-09-04 - Day 6
+
+### Learn
+- [x] JWT flows: access/refresh، rotation، expiry trade-offs — درس کامل صبح (brief) + اجرای عملی در T1.3
+
+### Planned
+- [x] **T1.3 JWT Auth** — **بسته شد**: `app/core/security.py` (bcrypt + JWT HS256، access 30min/refresh 7d، token rotation)، `app/api/auth.py` (register 201/409، login 401/403، refresh 401 + rotation)، `app/schemas/auth.py`، `app/api/deps.py` (CurrentUser dependency)، `tests/test_auth.py` (5 test شامل edge cases) — **CI تایید شده (سبز)**
+- [ ] اینستا gymmim: ادیت فوتاژ ضبط‌شده + انتشار Reel اول → تسک جریان gymmim
+- [ ] پست لینکدین: محتوای نهایی از کاربر → انتشار (پیش‌نویس قبلی رد شده)
+- [ ] T1.4 RBAC: `app/core/rbac.py` + role check در `get_current_user` + tests
+- [ ] T1.5 Rate Limit + CORS: `app/core/rate_limit.py` + middleware + tests
+
+### Report (fill at end of day)
+**گزارش کاربر (ثبت 2026-09-04 19:xx):** جلسهٔ صبح سلیمی رفت ✓، T1.3 انجام + پوش + Actions تأیید ✓، فوتاژ gymmim ضبط شده ✓، معماری/سیستم‌دیزاین کامل ✓ (سند + Canvas در Obsidian)، پیش‌نویس پست لینکدین رد شد — محتوای جدید بعداً.
+
+### Agent verdict (19:xx — با شواهد)
+| تسک | وضعیت | مدرک |
+|---|---|---|
+| T1.3 JWT Auth | ✅ **بسته شد** | کد کامل + `tests/test_auth.py` 5 passed + CI سبز |
+| جلسهٔ سلیمی | ✅ انجام شد | گزارش کاربر — جزئیات ۳ خط در streams |
+| ویدئو gymmim | ✓ ضبط شد | فاز ادیت/انتشار فردا |
+| معماری/سیستم‌دیزاین | ✅ کامل | `AegisAI — سیستم‌دیزاین کامل.md` + `AegisAI System Design.canvas` در Obsidian |
+| پست لینکدین | ⏸ موکول | محتوای جدید با کاربر طراحی می‌شود |
+
+- **Phase 1: 3/5** (T1.1 ✅ T1.2 ✅ T1.3 ✅ — مانده T1.4 RBAC و T1.5 Rate Limit)
+- **فردا (2026-09-05 = Day 7، شنبه):** WIP: T1.4 RBAC + T1.5 Rate Limit/CORS · اینستا gymmim ادیت/انتشار · پست لینکدین · باشگاه ۱۹:۳۰ · مرور ۲۱:۰۰/۲۱:۳۰
+
 
