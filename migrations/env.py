@@ -11,6 +11,7 @@ from app.db.base import Base
 
 config = context.config
 
+# if not config.get_main_option("sqlalchemy.url"):
 config.set_main_option(
     "sqlalchemy.url",
     settings.database_url,

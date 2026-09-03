@@ -45,10 +45,8 @@ class User(Base):
         nullable=False,
     )
     
-    create_at: Mapped[datetime] = mapped_column(
+    created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default= lambda: datetime.now(UTC),
-        nullable=False
+        default=lambda: datetime.now(UTC),
+        nullable=False,
     )
-     
-    

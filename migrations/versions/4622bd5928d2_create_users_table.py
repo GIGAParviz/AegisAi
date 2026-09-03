@@ -1,8 +1,8 @@
 """create users table
 
-Revision ID: 2b6738b5ccae
+Revision ID: 4622bd5928d2
 Revises: 
-Create Date: 2026-09-03 00:53:26.228247
+Create Date: 2026-09-03 13:03:46.700493
 
 """
 from collections.abc import Sequence
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '2b6738b5ccae'
+revision: str = '4622bd5928d2'
 down_revision: str | Sequence[str] | None = None
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
@@ -25,8 +25,8 @@ def upgrade() -> None:
     sa.Column('email', sa.String(length=255), nullable=False),
     sa.Column('hashed_password', sa.String(length=255), nullable=False),
     sa.Column('role', sa.Enum('ADMIN', 'USER', 'AGENT', name='user_role'), nullable=False),
-    sa.Column('is_acitve', sa.Boolean(), nullable=False),
-    sa.Column('create_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_users'))
     )
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
