@@ -182,3 +182,19 @@ _(بازبینی ۲۱:۰۰ کرون بدون گزارش کاربر — شواه�
 - **جمع‌بندی یادگیری امروز:** SQLAlchemy 2 async عملاً از مسیر تست سبز تمرین شد (engine → sessionmaker → add/commit/select روی aiosqlite in-memory)؛ جمع‌بندی مفهومی منتظر گزارش کاربر.
 - **فردا (2026-09-03 = Day 5):** اول کامیت + push کار T1.1 (شواهد امروز فقط روی دیسک است — فردا بدون کامیت از دست می‌رود) → T1.2 (User model + Alembic init/migration؛ همراه رفع `get_sessio` و تعیین تکلیف dev-dependency تکراری) + Learn: JWT flows (T1.3 بعدی است) · تعهدات بیرونی: جلسهٔ سلیمی (پنجشنبه صبح) · ادیت ویدئوی اینستا · مصاحبهٔ جمعه ۴ سپتامبر ۱۴:۳۰.
 
+---
+
+## 2026-09-03 - Day 5
+
+### Learn
+- [ ] JWT flows: access/refresh, rotation, expiry trade-offs — درس کامل صبح (پیش‌نیاز T1.3)
+
+### Planned
+- [x] T1.2 تکمیل نیمهٔ دوم (carry-over Day 4): ستون `create_at`→`created_at` در مدل + revision، migration از صفر روی dev (`aegis.db` حذف/ساخت مجدد)، `alembic upgrade head`، roundtrip کامل، commit+push → `docs/tasks/T1.2-user-model-alembic.md`
+- [ ] T1.3 JWT auth: `app/core/security.py` (passlib + pyjwt؛ `jwt_secret`/`jwt_alg` از T0.3 موجود) + `app/api/auth.py` (register 201/409، login 401، refresh) + `tests/test_auth.py` → `docs/tasks/T1.3-jwt-auth.md`
+- [ ] بعد از هر push: تیک سبز CI در GitHub Actions (قاعدهٔ برقرار از `ae9f375`)
+
+> تعهدات بیرونی امروز: ☀️ صبح جلسهٔ سلیمی (اولویت مطلق) · ۲۱:۳۰ مرور هفتگی Life OS (اولین) · عصر ضبط ویدئو gymmim · مصاحبهٔ جمعه ۴ سپتامبر ۱۴:۳۰ (آماده‌سازی امروز/فردا صبح).
+> با این ظرفیت، T1.3 محتمل است به فردا carry-over شود — اولویت: T1.2 کامل بسته شود و baseline سبز بماند.
+
+
