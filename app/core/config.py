@@ -24,6 +24,13 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = Field(default=7, validation_alias="REFRESH_TOKEN_EXPIRED_DAYS")
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
+    cors_origins: list[str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+
+    rate_limit_requests: int = 60
+    rate_limit_window_seconds: int = 60
 
 settings = Settings()
 
