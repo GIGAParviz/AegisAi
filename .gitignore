@@ -13,6 +13,7 @@ my_tests/
 .env
 .env.*
 
+uploads/
 
 .pytest_cache/
 
