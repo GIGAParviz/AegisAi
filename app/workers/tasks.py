@@ -2,7 +2,6 @@ from uuid import UUID
 
 from sqlalchemy import select
 
-from app.core.config import settings
 from app.db.engine import async_session_factory
 from app.db.models.document import (
     Document,
