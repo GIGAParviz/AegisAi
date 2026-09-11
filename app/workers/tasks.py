@@ -16,7 +16,6 @@ def ingest_document(
     document_id: str,
 ):
     import asyncio
-
     return asyncio.run(_process_document(document_id))
 
 
@@ -28,14 +27,9 @@ async def _process_document(
 
     async with async_session_factory() as session:
         try:
-            result = await session.execute(
-                select(Document).where(Document.id == UUID(document_id))
-            )
-
+            result = await session.execute(select(Document).where(Document.id == UUID(document_id)))
             document = result.scalar_one()
-
             document.status = DocumentStatus.PROCESSING
-
             await session.commit()
 
             """
@@ -47,7 +41,6 @@ async def _process_document(
             """
 
             document.status = DocumentStatus.READY
-
             await session.commit()
 
             return {
@@ -59,7 +52,6 @@ async def _process_document(
             if document is not None:
                 document.status = DocumentStatus.FAILED
                 document.error = str(exc)
-
                 await session.commit()
 
             raise
