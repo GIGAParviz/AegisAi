@@ -10,7 +10,7 @@ from app.main import app
 @pytest_asyncio.fixture
 async def session_factory():
     engine = create_async_engine(
-        "sqlite+aiosqlite:///:memory:",
+        "sqlite+aiosqlite:///./aegis.db",
     )
 
     factory = async_sessionmaker(

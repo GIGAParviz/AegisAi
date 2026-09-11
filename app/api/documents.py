@@ -19,6 +19,7 @@ from app.db.engine import get_session
 from app.db.models.document import Document, DocumentStatus
 from app.db.models.user import User
 from app.schemas.document import DocumentResponse
+from app.workers.tasks import ingest_document
 
 router = APIRouter(
     prefix="/documents",
@@ -98,6 +99,10 @@ async def upload_document(
     await session.commit()
 
     await session.refresh(document)
+
+    ingest_document.delay(
+        str(document.id)
+    )
 
     return document
 
