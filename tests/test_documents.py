@@ -24,12 +24,18 @@ async def test_upload_and_get_document(
         upload_dir,
     )
 
+    monkeypatch.setattr(
+        doc_api.ingest_document,
+        "delay",
+        lambda *args, **kwargs: None,
+    )
+
     user = User(
         email="document-user@example.com",
         hashed_password=hash_pass("secret123"),
         role=UserRole.USER,
     )
-
+    
     db_session.add(user)
     await db_session.commit()
     await db_session.refresh(user)
