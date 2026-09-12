@@ -4,6 +4,7 @@ from textwrap import dedent
 from app.services.chunker import TextChunker
 from app.services.extractors import extract
 
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 def test_short_text_creates_one_chunk():
     chunker = TextChunker(
@@ -62,9 +63,8 @@ def test_headings_create_boundaries():
     assert chunks[1].content.startswith(
         "# Database"
     )
-
 def test_extract_markdown():
-    path = Path(r"E:\projs\AegisAI\tests\fixtures\sample.md")
+    path = FIXTURES_DIR / "sample.md"
 
     text = extract(path)
 
@@ -73,12 +73,10 @@ def test_extract_markdown():
 
 
 def test_extract_pdf():
-    path = Path(r"E:\projs\AegisAI\tests\fixtures\sample.pdf")
+    path = FIXTURES_DIR / "sample.pdf"
 
     text = extract(path)
 
     assert "# AegisAI" in text
     assert "Celery workers" in text
-
-
 
