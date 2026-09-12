@@ -1,11 +1,17 @@
 import asyncio
+from pathlib import Path
 from uuid import UUID
 
 from sqlalchemy import select
 
 from app.db.engine import async_session_factory
 from app.db.models.document import Document, DocumentStatus
+from app.db.models.document_chunk import DocumentChunk
+from app.services.chunker import TextChunker
+from app.services.extractors import extract
 from app.workers.celery_app import celery_app
+
+UPLOAD_DIR = Path("uploads")
 
 
 @celery_app.task(name="ingest_document")
@@ -19,17 +25,13 @@ async def _process_document(document_id: str):
     async with async_session_factory() as session:
         try:
             result = await session.execute(
-                select(Document).where(
-                    Document.id == UUID(document_id)
-                )
+                select(Document).where(Document.id == UUID(document_id))
             )
 
             document = result.scalar_one_or_none()
 
             if document is None:
-                raise ValueError(
-                    f"Document {document_id} not found"
-                )
+                raise ValueError(f"Document {document_id} not found")
 
             # idempotency
             if document.status == DocumentStatus.READY:
@@ -43,6 +45,23 @@ async def _process_document(document_id: str):
 
             await session.commit()
 
+            file_path = UPLOAD_DIR / f"{document.id}_{document.filename}"
+            
+            text = extract(file_path)
+
+            chunker = TextChunker()
+            chunks = chunker.chunk(text)
+
+            for index, chunk in enumerate(chunks):
+                session.add(
+                    DocumentChunk(
+                        document_id=document.id,
+                        chunk_index=index,
+                        content=chunk.content,
+                        token_count=chunk.token_count,
+                    )
+                )
+
             # TODO:
             # OCR
             # extraction
@@ -50,7 +69,6 @@ async def _process_document(document_id: str):
             # embeddings
 
             document.status = DocumentStatus.READY
-
             await session.commit()
 
             return {

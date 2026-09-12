@@ -1,0 +1,63 @@
+import uuid
+from datetime import UTC, datetime
+
+from sqlalchemy import (
+    DateTime,
+    ForeignKey,
+    Integer,
+    Text,
+    UniqueConstraint,
+    Uuid,
+)
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.db.base import Base
+
+
+class DocumentChunk(Base):
+    __tablename__ = "document_chunks"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "document_id",
+            "chunk_index",
+            name="uq_document_chunks_document_index",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        ForeignKey(
+            "documents.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    chunk_index: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+
+    content: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    token_count: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+    )
