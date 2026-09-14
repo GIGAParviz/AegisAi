@@ -32,6 +32,21 @@ class Settings(BaseSettings):
     rate_limit_requests: int = 60
     rate_limit_window_seconds: int = 60
 
+    embedding_provider: str = "local"
+
+    embedding_model: str = (
+        "sentence-transformers/all-MiniLM-L6-v2"
+    )
+
+    embedding_base_url: str = (
+        "https://api.openai.com/v1"
+    )
+
+    embedding_api_key: str = ""
+
+    embedding_batch_size: int = 32
+
+
 settings = Settings()
 
 # class DbSettings(BaseSettings):
