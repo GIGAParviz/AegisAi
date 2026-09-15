@@ -4,6 +4,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy import select
 
+from app.core.config import settings
 from app.core.security import hash_pass
 from app.db.models.document import Document, DocumentStatus
 from app.db.models.document_chunk import DocumentChunk
@@ -20,6 +21,12 @@ async def test_ingest_document_changes_status(
     tmp_path,
     monkeypatch,
 ):
+    monkeypatch.setattr(
+        settings,
+        "embedding_provider",
+        "fake",
+    )
+
     celery_app.conf.update(
         task_always_eager=True,
         task_eager_propagates=True,

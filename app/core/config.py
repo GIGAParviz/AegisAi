@@ -46,6 +46,13 @@ class Settings(BaseSettings):
 
     embedding_batch_size: int = 32
 
+    qdrant_collection_name: str = "aegis_documents"
+
+    embedding_dimensions: int = 384
+
+    sparse_embedding_model: str = "Qdrant/bm25"
+
+    hybrid_prefetch_limit: int = 20
 
 settings = Settings()
 

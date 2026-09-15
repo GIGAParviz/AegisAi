@@ -42,7 +42,7 @@ def _batched(
 class FakeEmbeddingProvider:
     def __init__(
         self,
-        dimensions: int = 8,
+        dimensions: int = 384,
     ):
         if dimensions <= 0:
             raise ValueError(
@@ -80,7 +80,7 @@ class FakeEmbeddingProvider:
 
             counter += 1
 
-        return values[: self.dimensions]
+        return values[:self.dimensions]
 
 
 class LocalSTProvider:
