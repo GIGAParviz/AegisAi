@@ -80,14 +80,14 @@ async def test_ingest_document_changes_status(
 
     file_path.write_text(
         """
-# AegisAI
+        # AegisAI
 
-This is a document processing test.
+        This is a document processing test.
 
-# Worker
+        # Worker
 
-Celery extracts and chunks this document.
-""".strip(),
+        Celery extracts and chunks this document.
+        """.strip(),
         encoding="utf-8",
     )
 

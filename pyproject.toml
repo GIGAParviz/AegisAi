@@ -36,9 +36,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-local-embeddings = [
+local-ml = [
     "sentence-transformers>=6.0.1",
 ]
+
 dev = [
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",

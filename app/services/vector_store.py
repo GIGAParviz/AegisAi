@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import uuid
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Protocol
 
 from fastembed import SparseTextEmbedding
@@ -11,6 +11,10 @@ from qdrant_client import QdrantClient, models
 
 from app.core.config import settings
 from app.services.embeddings import EmbeddingProvider, Vector
+from app.services.reranker import (
+    Reranker,
+    build_reranker,
+)
 
 
 @dataclass(frozen=True)
@@ -28,7 +32,8 @@ class SearchResult:
     chunk_index: int
     text: str
     heading: str | None
-    score: int
+    score: float
+
 
 class VectorStore(Protocol):
     async def ensure_collection(
@@ -93,6 +98,8 @@ class QdrantVectorStore:
         collection_name: str,
         dense_dimensions: int,
         prefetch_limit: int = 20,
+        reranker: Reranker | None = None,
+        rerank_candidates: int = 20,
     ):
         self.client = client
         self.dense_provider = dense_provider
@@ -100,6 +107,9 @@ class QdrantVectorStore:
         self.collection_name = collection_name
         self.dense_dimensions = dense_dimensions
         self.prefetch_limit = prefetch_limit
+
+        self.reranker = reranker
+        self.rerank_candidates = rerank_candidates
 
     async def ensure_collection(
         self,
@@ -180,6 +190,15 @@ class QdrantVectorStore:
         query: str,
         k: int,
     ) -> list[SearchResult]:
+        candidate_limit = (
+            max(k, self.rerank_candidates) if self.reranker is not None else k
+        )
+
+        prefetch_limit = max(
+            self.prefetch_limit,
+            candidate_limit,
+        )
+
         dense_vectors = await self.dense_provider.embed(
             [query],
         )
@@ -198,23 +217,22 @@ class QdrantVectorStore:
                 models.Prefetch(
                     query=dense_query,
                     using="dense",
-                    limit=self.prefetch_limit,
+                    limit=prefetch_limit,
                 ),
                 models.Prefetch(
                     query=sparse_query,
                     using="sparse",
-                    limit=self.prefetch_limit,
+                    limit=prefetch_limit,
                 ),
             ],
             query=models.FusionQuery(
                 fusion=models.Fusion.RRF,
             ),
-            limit=k,
+            limit=candidate_limit,
             with_payload=True,
         )
 
         results: list[SearchResult] = []
-
         for point in response.points:
             payload = point.payload or {}
 
@@ -228,7 +246,22 @@ class QdrantVectorStore:
                 )
             )
 
-        return results
+        if self.reranker is None:
+            return results[:k]
+
+        ranked = await self.reranker.rerank(
+            query=query,
+            douments=[result.text for result in results],
+            top_k=k,
+        )
+
+        return [
+            replace(
+                results[item.index],
+                score=item.score,
+            )
+            for item in ranked
+        ]
 
 
 class FakeVectorStore:
@@ -272,7 +305,9 @@ def build_vector_store(
     dense_provider: EmbeddingProvider,
 ) -> QdrantVectorStore:
     client = QdrantClient(url=settings.qdrant_url)
-
+    
+    reranker = build_reranker()
+    
     sparse_provider = SparseBM25Provider(model_name=settings.sparse_embedding_model)
 
     return QdrantVectorStore(
@@ -282,6 +317,6 @@ def build_vector_store(
         collection_name=settings.qdrant_collection_name,
         dense_dimensions=settings.embedding_dimensions,
         prefetch_limit=settings.hybrid_prefetch_limit,
+        reranker=reranker,
+        rerank_candidates=settings.rerank_candidates,
     )
-
-
