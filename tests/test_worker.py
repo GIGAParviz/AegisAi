@@ -12,7 +12,7 @@ from app.db.models.user import User, UserRole
 from app.workers import tasks as worker_tasks
 from app.workers.celery_app import celery_app
 from app.workers.tasks import ingest_document
-
+from app.services.vector_store import FakeVectorStore
 
 @pytest.mark.asyncio
 async def test_ingest_document_changes_status(
@@ -27,6 +27,12 @@ async def test_ingest_document_changes_status(
         "fake",
     )
 
+    monkeypatch.setattr(
+        worker_tasks,
+        "build_vector_store",
+        lambda *_: FakeVectorStore()
+    )
+    
     celery_app.conf.update(
         task_always_eager=True,
         task_eager_propagates=True,

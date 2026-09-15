@@ -30,6 +30,12 @@ class SearchResult:
     heading: str | None
     score: int
 
+class FakeVectorStore:
+    async def ensure_collection(self):
+        pass
+
+    async def upsert_chunks(self, chunks):
+        self.chunks = chunks
 
 class VectorStore(Protocol):
     async def ensure_collection(
@@ -181,7 +187,6 @@ class QdrantVectorStore:
         query: str,
         k: int,
     ) -> list[SearchResult]:
-        
         dense_vectors = await self.dense_provider.embed(
             [query],
         )
@@ -192,7 +197,6 @@ class QdrantVectorStore:
 
         dense_query = dense_vectors[0]
         sparse_query = sparse_vectors[0]
-
 
         response = await asyncio.to_thread(
             self.client.query_points,
@@ -209,42 +213,31 @@ class QdrantVectorStore:
                     limit=self.prefetch_limit,
                 ),
             ],
-            query= models.FusionQuery(
+            query=models.FusionQuery(
                 fusion=models.Fusion.RRF,
             ),
             limit=k,
             with_payload=True,
         )
-        
+
         results: list[SearchResult] = []
-        
+
         for point in response.points:
             payload = point.payload or {}
-            
+
             results.append(
                 SearchResult(
-                    document_id=str(
-                        payload["doc_id"]
-                    ),
-                    chunk_index=int(
-                        payload["chunk_index"]
-                    ),
-                    text=str(
-                        payload["text"]
-                    ),
-                    heading=payload.get(
-                        "heading"
-                    ),
-                    score=float(
-                        point.score
-                    ),
+                    document_id=str(payload["doc_id"]),
+                    chunk_index=int(payload["chunk_index"]),
+                    text=str(payload["text"]),
+                    heading=payload.get("heading"),
+                    score=float(point.score),
                 )
             )
-            
+
         return results
-    
-    
-    
+
+
 class FakeVectorStore:
     def __init__(self):
         self.chunks: list[VectorChunk] = []
@@ -268,11 +261,7 @@ class FakeVectorStore:
     ) -> list[SearchResult]:
         query_lower = query.lower()
 
-        matching = [
-            chunk
-            for chunk in self.chunks
-            if query_lower in chunk.text.lower()
-        ]
+        matching = [chunk for chunk in self.chunks if query_lower in chunk.text.lower()]
 
         return [
             SearchResult(
@@ -284,18 +273,14 @@ class FakeVectorStore:
             )
             for chunk in matching[:k]
         ]
-        
-        
+
+
 def build_vector_store(
     dense_provider: EmbeddingProvider,
 ) -> QdrantVectorStore:
-    client = QdrantClient(
-        url=settings.qdrant_url
-    )
+    client = QdrantClient(url=settings.qdrant_url)
 
-    sparse_provider = SparseBM25Provider(
-        model_name=settings.sparse_embedding_model
-    )
+    sparse_provider = SparseBM25Provider(model_name=settings.sparse_embedding_model)
 
     return QdrantVectorStore(
         client=client,
@@ -305,3 +290,5 @@ def build_vector_store(
         dense_dimensions=settings.embedding_dimensions,
         prefetch_limit=settings.hybrid_prefetch_limit,
     )
+
+
