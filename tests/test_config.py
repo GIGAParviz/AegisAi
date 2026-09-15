@@ -14,6 +14,7 @@ def test_settings_defaults():
     assert settings.jwt_secret == "dev-secret-change-me"
     assert settings.jwt_alg == "HS256"
     assert settings.access_token_expire_min == 30
+    assert settings.embedding_provider == "fake"
 
 
 def test_env_overrides_settings(monkeypatch):

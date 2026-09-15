@@ -1,8 +1,16 @@
 import pytest
 
+from app.core.config import settings
 from app.services.embeddings import (
     FakeEmbeddingProvider,
+    build_embedding_provider,
 )
+
+
+def test_default_provider_is_fake(monkeypatch):
+    monkeypatch.setattr(settings, "embedding_provider", "fake")
+
+    assert isinstance(build_embedding_provider(), FakeEmbeddingProvider)
 
 
 @pytest.mark.asyncio

@@ -11,7 +11,6 @@ from app.core.config import settings
 
 Vector = list[float]
 
-
 class EmbeddingProvider(Protocol):
     async def embed(
         self,

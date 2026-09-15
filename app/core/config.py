@@ -32,7 +32,10 @@ class Settings(BaseSettings):
     rate_limit_requests: int = 60
     rate_limit_window_seconds: int = 60
 
-    embedding_provider: str = "local"
+    # Keep the default install and CI free of the torch dependency chain.
+    # Opt into local embeddings explicitly after installing
+    # the `local-embeddings` extra.
+    embedding_provider: str = "fake"
 
     embedding_model: str = (
         "sentence-transformers/all-MiniLM-L6-v2"

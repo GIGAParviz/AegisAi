@@ -37,7 +37,6 @@ dependencies = [
     { name = "qdrant-client" },
     { name = "redis" },
     { name = "rich" },
-    { name = "sentence-transformers" },
     { name = "sqlalchemy" },
     { name = "sqlmodel" },
     { name = "tiktoken" },
@@ -49,6 +48,9 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
+]
+local-embeddings = [
+    { name = "sentence-transformers" },
 ]
 
 [package.dev-dependencies]
@@ -87,13 +89,13 @@ requires-dist = [
     { name = "redis", specifier = ">=8.1.0" },
     { name = "rich", specifier = ">=15.0.0" },
     { name = "ruff", marker = "extra == 'dev'" },
-    { name = "sentence-transformers", specifier = ">=6.0.1" },
+    { name = "sentence-transformers", marker = "extra == 'local-embeddings'", specifier = ">=6.0.1" },
     { name = "sqlalchemy", specifier = ">=2.0.52" },
     { name = "sqlmodel", specifier = ">=0.0.42" },
     { name = "tiktoken", specifier = ">=0.14.0" },
     { name = "uvicorn", extras = ["standard"] },
 ]
-provides-extras = ["dev"]
+provides-extras = ["local-embeddings", "dev"]
 
 [package.metadata.requires-dev]
 dev = [
