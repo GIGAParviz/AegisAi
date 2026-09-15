@@ -30,13 +30,6 @@ class SearchResult:
     heading: str | None
     score: int
 
-class FakeVectorStore:
-    async def ensure_collection(self):
-        pass
-
-    async def upsert_chunks(self, chunks):
-        self.chunks = chunks
-
 class VectorStore(Protocol):
     async def ensure_collection(
         self,

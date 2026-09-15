@@ -9,10 +9,11 @@ from app.core.security import hash_pass
 from app.db.models.document import Document, DocumentStatus
 from app.db.models.document_chunk import DocumentChunk
 from app.db.models.user import User, UserRole
+from app.services.vector_store import FakeVectorStore
 from app.workers import tasks as worker_tasks
 from app.workers.celery_app import celery_app
 from app.workers.tasks import ingest_document
-from app.services.vector_store import FakeVectorStore
+
 
 @pytest.mark.asyncio
 async def test_ingest_document_changes_status(
