@@ -138,51 +138,50 @@ class OpenAICompatProvider:
         async with httpx.AsyncClient(
             timeout=self.timeout,
             transport=self.transport,
-        ) as client:
-            async with client.stream(
-                "POST",
-                f"{self.base_url}/chat/completions",
-                headers=self._headers(),
-                json=payload,
-            ) as response:
-                response.raise_for_status()
+        ) as client, client.stream(
+            "POST",
+            f"{self.base_url}/chat/completions",
+            headers=self._headers(),
+            json=payload,
+        ) as response:
+            response.raise_for_status()
 
-                async for line in response.aiter_lines():
-                    line = line.strip()
+            async for line in response.aiter_lines():
+                line = line.strip()
 
-                    if not line:
-                        continue
+                if not line:
+                    continue
 
-                    if line.startswith(":"):
-                        continue
+                if line.startswith(":"):
+                    continue
 
-                    if not line.startswith("data:"):
-                        continue
+                if not line.startswith("data:"):
+                    continue
 
-                    raw_data = line[len("data:") :].strip()
+                raw_data = line[len("data:") :].strip()
 
-                    if raw_data == "[DONE]":
-                        break
+                if raw_data == "[DONE]":
+                    break
 
-                    try:
-                        event = json.loads(raw_data)
-                    except json.JSONDecodeError as exc:
-                        raise LLMProviderError("Invalid SSE JSON from LLM") from exc
+                try:
+                    event = json.loads(raw_data)
+                except json.JSONDecodeError as exc:
+                    raise LLMProviderError("Invalid SSE JSON from LLM") from exc
 
-                    choices = event.get(
-                        "choices",
-                        [],
-                    )
+                choices = event.get(
+                    "choices",
+                    [],
+                )
 
-                    if not choices:
-                        continue
+                if not choices:
+                    continue
 
-                    delta = choices[0].get("delta") or {}
+                delta = choices[0].get("delta") or {}
 
-                    content = delta.get("content")
+                content = delta.get("content")
 
-                    if isinstance(content, str) and content:
-                        yield content
+                if isinstance(content, str) and content:
+                    yield content
 
 
 def build_llm_provider() -> LLMProvider:
