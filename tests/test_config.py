@@ -7,7 +7,7 @@ def test_settings_defaults():
     assert settings.database_url == "sqlite+aiosqlite:///./aegis.db"
     assert settings.redis_url == "redis://localhost:6379/0"
     assert settings.qdrant_url == "http://localhost:6333"
-    assert settings.llm_provider == "orcarouter"
+    assert settings.llm_provider == "openai_compat"
     assert settings.llm_base_url == "https://api.orcarouter.ai/v1"
     assert settings.llm_api_key == ""
     assert settings.llm_model == "z-ai/glm-5.3-flash"
