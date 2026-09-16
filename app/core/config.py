@@ -12,12 +12,22 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     qdrant_url: str = "http://localhost:6333"
 
-    llm_provider: str = "orcarouter"
+    llm_provider: str = "openai_compat"
+
     llm_base_url: str = Field(
-        default="https://api.orcarouter.ai/v1", validation_alias="PROVIDER_URL"
+        default="https://api.orcarouter.ai/v1",
+        validation_alias="PROVIDER_URL",
     )
-    llm_api_key: str = Field(default="", validation_alias="API_KEY")
-    llm_model: str = Field(default="z-ai/glm-5.3-flash", validation_alias="MODEL_NAME")
+
+    llm_api_key: str = Field(
+        default="",
+        validation_alias="API_KEY",
+    )
+
+    llm_model: str = Field(
+        default="z-ai/glm-5.3-flash",
+        validation_alias="MODEL_NAME",
+    )
 
     jwt_secret: str = Field(
         default="dev-secret-change-me", validation_alias="JWT_SECRET"
