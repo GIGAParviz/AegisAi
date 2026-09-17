@@ -56,5 +56,10 @@ dev = [
     "pytest-asyncio>=1.4.0",
 ]
 
+[tool.pytest.ini_options]
+markers = [
+    "integration: tests requiring external services",
+]
+
 [tool.ruff.lint.per-file-ignores]
 "app/api/*.py" = ["B008"]

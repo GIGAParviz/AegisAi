@@ -11,11 +11,13 @@ class Settings(BaseSettings):
 
     redis_url: str = "redis://localhost:6379/0"
     qdrant_url: str = "http://localhost:6333"
-
+    
+    run_llm_integration: bool = False
+    
     llm_provider: str = "openai_compat"
 
     llm_base_url: str = Field(
-        default="https://api.orcarouter.ai/v1",
+        default="https://openrouter.ai/api/v1",
         validation_alias="PROVIDER_URL",
     )
 
@@ -25,13 +27,15 @@ class Settings(BaseSettings):
     )
 
     llm_model: str = Field(
-        default="z-ai/glm-5.3-flash",
+        default="nvidia/nemotron-3.5-lightning:free",
         validation_alias="MODEL_NAME",
     )
 
     jwt_secret: str = Field(
-        default="dev-secret-change-me", validation_alias="JWT_SECRET"
+    default="dev-secret-change-me-at-least-32-bytes-long",
+    validation_alias="JWT_SECRET",
     )
+    
     jwt_alg: str = Field(default="HS256", validation_alias="JWT_ALGORITHM")
 
     access_token_expire_min: int = Field(
@@ -52,9 +56,6 @@ class Settings(BaseSettings):
     rate_limit_requests: int = 60
     rate_limit_window_seconds: int = 60
 
-    # Keep the default install and CI free of the torch dependency chain.
-    # Opt into local embeddings explicitly after installing
-    # the `local-embeddings` extra.
     embedding_provider: str = "fake"
 
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
