@@ -82,11 +82,5 @@ class Settings(BaseSettings):
 
     rerank_batch_size: int = 16
 
-    context_history_limit: int = 10
-
-    context_sources_limit: int = 5
-
-    max_context_tokens: int = 2048
-
 
 settings = Settings()

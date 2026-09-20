@@ -253,19 +253,4 @@ _(بازبینی ۲۱:۰۰ کرون بدون گزارش کاربر — شواه�
 - **Phase 1: 3/5** (T1.1 ✅ T1.2 ✅ T1.3 ✅ — مانده T1.4 RBAC و T1.5 Rate Limit)
 - **فردا (2026-09-05 = Day 7، شنبه):** WIP: T1.4 RBAC + T1.5 Rate Limit/CORS · اینستا gymmim ادیت/انتشار · پست لینکدین · باشگاه ۱۹:۳۰ · مرور ۲۱:۰۰/۲۱:۳۰
 
----
-
-## 2026-09-20 — T4.1 Context Builder
-
-### Agent verdict
-
-| تسک | وضعیت | مدرک |
-|---|---|---|
-| T4.1 Context Builder | ✅ **بسته شد** | Redis history، Qdrant hybrid sources با citation، facts از DB، trimming با token budget؛ `tests/test_context_builder.py` → 2 passed؛ کل suite → 34 passed، 1 skipped؛ Ruff و diff check تمیز |
-
-### Implementation notes
-
-- `history` از کلید `chat:history:{session_id}` با ترتیب زمانی خوانده می‌شود.
-- `sources` از `hybrid_search` با citationهای `[1]..[k]` ساخته می‌شوند.
-- در trimming، قدیمی‌ترین history و پایین‌ترین source حذف می‌شوند؛ در فشار شدید، facts کم‌اولویت هم حذف می‌شوند تا سقف رعایت شود.
 
