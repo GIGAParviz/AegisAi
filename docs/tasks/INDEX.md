@@ -37,7 +37,7 @@
 
 ## فاز 4 — Harness
 
-- [ ] `T4.1-context-builder.md` — Context Builder
+- [x] `T4.1-context-builder.md` — Context Builder
 - [ ] `T4.2-action-registry.md` — رجیستری اکشن ها (Pydantic)
 - [ ] `T4.3-policy-gate.md` — Policy Gate (deny-by-default + audit)
 - [ ] `T4.4-verifier.md` — لایه Verify (schema + قواعد + retry)
