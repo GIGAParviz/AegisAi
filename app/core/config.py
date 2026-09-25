@@ -11,9 +11,9 @@ class Settings(BaseSettings):
 
     redis_url: str = "redis://localhost:6379/0"
     qdrant_url: str = "http://localhost:6333"
-    
+
     run_llm_integration: bool = False
-    
+
     llm_provider: str = "openai_compat"
 
     llm_base_url: str = Field(
@@ -32,10 +32,10 @@ class Settings(BaseSettings):
     )
 
     jwt_secret: str = Field(
-    default="dev-secret-change-me-at-least-32-bytes-long",
-    validation_alias="JWT_SECRET",
+        default="dev-secret-change-me-at-least-32-bytes-long",
+        validation_alias="JWT_SECRET",
     )
-    
+
     jwt_alg: str = Field(default="HS256", validation_alias="JWT_ALGORITHM")
 
     access_token_expire_min: int = Field(
@@ -81,6 +81,12 @@ class Settings(BaseSettings):
     rerank_candidates: int = 20
 
     rerank_batch_size: int = 16
+
+    context_history_limit: int = 10
+
+    context_sources_limit: int = 5
+
+    max_context_tokens: int = 2048
 
 
 settings = Settings()
