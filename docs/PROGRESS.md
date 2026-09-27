@@ -254,3 +254,29 @@ _(بازبینی ۲۱:۰۰ کرون بدون گزارش کاربر — شواه�
 - **فردا (2026-09-05 = Day 7، شنبه):** WIP: T1.4 RBAC + T1.5 Rate Limit/CORS · اینستا gymmim ادیت/انتشار · پست لینکدین · باشگاه ۱۹:۳۰ · مرور ۲۱:۰۰/۲۱:۳۰
 
 
+
+---
+
+## 2026-09-28 - Audit کامل (Day ~29)
+
+### شواهد زنده (اجراشده همین حالا)
+- `pytest -q` → **34 passed, 1 skipped** (skip = `test_llm_integration.py` غیرفعال عمداً)
+- `ruff check .` → All checks passed
+- CI روی `ac1c1a3` (HEAD ریموت) → **success**؛ runs قبلی `dbb71ac`/`8ae6935` سبز
+- working tree: فقط `M app/services/context_builder.py` (رفع newline انتهای فایل) + فایل دست‌گرب `tests/ttt.py` (کامیت‌شده!)
+
+### وضعیت فازها بر اساس git log
+| فاز | تسک‌ها | وضعیت |
+|---|---|---|
+| 0 Foundation | T0.1–T0.6 | ✅ 6/6 |
+| 1 Gateway | T1.1–T1.5 | ✅ 5/5 (`d55f1e4` Redis rate-limit+CORS) |
+| 2 Data Engine | T2.1–T2.6 | ✅ 6/6 (`432ae23` upload، `7a904ca` celery، `fa3661a` chunk، `53ba4a5` embeds، `84aaf91` vector، `0352406` reranker) |
+| 3 Reasoning | T3.1 ✅، T3.2 🔶، T3.3 ✅ | 2.5/3 — T3.2 (llama.cpp محلی) مدرک ندارد؛ API ریموت جای آن کار می‌کند |
+| 4 Harness | T4.1 ✅ (`ac1c1a3` context builder+frontend)؛ T4.2 🔄 در حال انجام | 1/5 |
+| 5–7 | T5.1–T7.4 | ⬜ 0/12 |
+
+### بدهی‌های ثبت‌شده
+1. `tests/ttt.py` — اسکرچپاد Redis import، **کامیت شده در repo**. باید حذف شود.
+2. INDEX.md و status تسک‌ها 20+ روز عقب بود — با همین audit اصلاح شد.
+3. `PROGRESS.md` از 2026-09-05 ساکت بود — لاگ روزانه باز می‌شود.
+4. T3.2: تصمیم نهایی — GGUF محلی یا API ریموت دائمی؟ اگر ریموت، تسک با یادداشت بسته شود.
