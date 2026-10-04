@@ -1,126 +1,140 @@
 'use client'
 
-import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { Link, useRouter } from '@/lib/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card'
 
-const registerSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-})
+const registerSchema = z
+  .object({
+    email: z.string().email('invalid_email'),
+    password: z.string().min(8, 'password_hint'),
+    confirmPassword: z.string().min(1, 'password_required'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'passwords_differ',
+    path: ['confirmPassword'],
+  })
 
 type RegisterFormData = z.infer<typeof registerSchema>
 
 export function RegisterForm() {
+  const t = useTranslations('auth')
   const router = useRouter()
-  const { register: registerUser, isLoading } = useAuth()
+  const { register: registerUser } = useAuth()
+  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-      confirmPassword: '',
-    },
+    defaultValues: { email: '', password: '', confirmPassword: '' },
   })
 
-  const onSubmit = async (data: RegisterFormData) => {
-    setError(null)
-    try {
-      await registerUser(data)
-      router.push('/en/dashboard')
-      router.refresh()
-    } catch (err) {
-      if (err instanceof Error) {
-        if (err.message.includes('409')) {
-          setError('Email already registered')
-        } else if (err.message.includes('429')) {
-          setError('Too many requests. Please try again later.')
-        } else {
-          setError(err.message)
-        }
-      } else {
-        setError('An unexpected error occurred')
-      }
+  const mapError = (code?: string) => {
+    switch (code) {
+      case 'invalid_email':
+        return t('invalidEmail')
+      case 'password_hint':
+        return t('passwordHint')
+      case 'password_required':
+        return t('passwordRequired')
+      case 'passwords_differ':
+        return t('passwordsDiffer')
+      default:
+        return code ?? t('unexpectedError')
     }
   }
 
-  const password = watch('password')
+  const onSubmit = async (data: RegisterFormData) => {
+    setError(null)
+    setSubmitting(true)
+    try {
+      await registerUser(data.email, data.password)
+      router.push('/app/dashboard')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : ''
+      if (message.includes('409')) setError(t('emailTaken'))
+      else if (message.includes('429')) setError(t('tooManyRequests'))
+      else setError(t('unexpectedError'))
+      setSubmitting(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md" padding="lg">
-        <CardHeader className="text-center">
-          <div className="text-3xl font-serif text-text italic mb-2">AegisAI</div>
-          <CardTitle className="text-2xl">Create account</CardTitle>
-          <CardDescription>Start building your AI knowledge workspace</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <div className="mb-4 p-3 bg-[rgb(255,240,240)] border border-warm/30 rounded-lg text-warm text-sm" role="alert">
-              {error}
-            </div>
-          )}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <Input
-              {...register('email')}
-              type="email"
-              label="Email"
-              placeholder="you@example.com"
-              error={errors.email?.message}
-              autoComplete="email"
-              disabled={isLoading}
-            />
-            <Input
-              {...register('password')}
-              type="password"
-              label="Password"
-              placeholder="••••••••"
-              error={errors.password?.message}
-              autoComplete="new-password"
-              disabled={isLoading}
-              hint="At least 8 characters"
-            />
-            <Input
-              {...register('confirmPassword')}
-              type="password"
-              label="Confirm Password"
-              placeholder="••••••••"
-              error={errors.confirmPassword?.message}
-              autoComplete="new-password"
-              disabled={isLoading}
-            />
-            <Button type="submit" className="w-full" size="lg" loading={isLoading}>
-              Create account
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-2">
-          <p className="text-sm text-muted text-center">
-            Already have an account?{' '}
-            <Link href="/en/login" className="text-accent hover:underline font-medium">
-              Sign in
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
+    <div className="mx-auto w-full max-w-md">
+      <Link
+        href="/"
+        className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-text"
+      >
+        <ArrowLeft className="size-4 rtl:rotate-180" />
+        {t('backHome')}
+      </Link>
+
+      <h1 className="display text-4xl">{t('createAccount')}</h1>
+      <p className="prose-serif mt-2 text-[16.5px] text-muted">{t('registerSubtitle')}</p>
+
+      {error && (
+        <div
+          role="alert"
+          className="mt-6 rounded-xl border border-warm/30 bg-[#f3e2e8] px-4 py-3 text-sm text-warm"
+        >
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
+        <Input
+          {...register('email')}
+          type="email"
+          label={t('email')}
+          placeholder="you@example.com"
+          error={errors.email?.message ? mapError(errors.email.message) : undefined}
+          autoComplete="email"
+          disabled={submitting}
+          className="!bg-paper"
+        />
+        <Input
+          {...register('password')}
+          type="password"
+          label={t('password')}
+          placeholder="••••••••"
+          error={errors.password?.message ? mapError(errors.password.message) : undefined}
+          hint={!errors.password ? t('passwordHint') : undefined}
+          autoComplete="new-password"
+          disabled={submitting}
+          className="!bg-paper"
+        />
+        <Input
+          {...register('confirmPassword')}
+          type="password"
+          label={t('confirmPassword')}
+          placeholder="••••••••"
+          error={errors.confirmPassword?.message ? mapError(errors.confirmPassword.message) : undefined}
+          autoComplete="new-password"
+          disabled={submitting}
+          className="!bg-paper"
+        />
+        <Button type="submit" className="w-full" size="lg" loading={submitting}>
+          {t('signUp')}
+        </Button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-muted">
+        {t('hasAccount')}{' '}
+        <Link href="/login" className="font-medium text-accent hover:underline">
+          {t('signIn')}
+        </Link>
+      </p>
     </div>
   )
 }

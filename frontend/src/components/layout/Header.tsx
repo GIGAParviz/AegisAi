@@ -1,52 +1,57 @@
 'use client'
 
-import { usePathname, useRouter } from 'next/navigation'
-import { clsx } from 'clsx'
-import { LogOut, User, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
 import { useAuthStore } from '@/stores/authStore'
-import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/hooks/useAuth'
 import { LocaleSwitcher } from './LocaleSwitcher'
 
-export function Header() {
-  const pathname = usePathname()
-  const router = useRouter()
-  const { user, logout } = useAuthStore()
-
-  const handleLogout = () => {
-    logout()
-    router.push('/en/login')
-  }
+export function Header({ onMenu }: { onMenu: () => void }) {
+  const t = useTranslations('common')
+  const locale = useLocale()
+  const { user } = useAuthStore()
+  const { logout } = useAuth()
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-panel/80 backdrop-blur-sm border-b border-line">
-      <div className="h-full px-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button className="lg:hidden p-2 rounded hover:bg-line transition-colors text-muted hover:text-text" aria-label="Toggle menu">
-            <Menu className="h-5 w-5" />
-          </button>
-          <div className="hidden lg:block w-px h-6 bg-line" />
-          <span className="text-sm font-mono text-faint uppercase tracking-wider">
-            {pathname.split('/').filter(Boolean).pop() || 'Dashboard'}
-          </span>
-        </div>
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-line bg-bg/85 px-4 backdrop-blur-md sm:px-6 lg:px-8">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onMenu}
+          aria-label={t('menu')}
+          className="rounded-lg p-2 text-muted transition-colors hover:bg-panel hover:text-text lg:hidden"
+        >
+          <Menu className="size-5" />
+        </button>
+      </div>
 
-        <div className="flex items-center gap-3">
-          <LocaleSwitcher />
-          
-          {user && (
-            <div className="hidden sm:flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-sm font-medium text-text">{user.email}</p>
-                <p className="text-xs text-muted capitalize">{user.role.toLowerCase()}</p>
-              </div>
-              <div className="w-px h-6 bg-line mx-2" />
-              <Button variant="ghost" size="sm" onClick={handleLogout} aria-label="Log out">
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">Logout</span>
-              </Button>
+      <div className="flex items-center gap-2 sm:gap-3">
+        <LocaleSwitcher />
+        <div className="hidden h-6 w-px bg-line sm:block" aria-hidden="true" />
+        {user ? (
+          <div className="flex items-center gap-3">
+            <div className="hidden text-end sm:block">
+              <p className="max-w-[16ch] truncate text-sm font-medium leading-tight text-text">
+                {user.email}
+              </p>
+              <p className="font-mono text-[10px] uppercase tracking-wider text-faint">
+                {user.role.toLowerCase()}
+              </p>
             </div>
-          )}
-        </div>
+            <button
+              onClick={logout}
+              className="rounded-lg border border-line bg-paper/60 px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-panel hover:text-text"
+            >
+              {t('logout')}
+            </button>
+          </div>
+        ) : (
+          <a
+            href={`/${locale}/login`}
+            className="rounded-lg bg-accent px-3.5 py-1.5 text-sm font-medium text-paper transition-colors hover:bg-accent-deep"
+          >
+            {t('signIn')}
+          </a>
+        )}
       </div>
     </header>
   )

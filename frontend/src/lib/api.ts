@@ -47,6 +47,18 @@ interface TokenResponse {
   token_type: string
 }
 
+/** Decode the `sub` (user id) claim from a JWT without verifying it —
+ *  client-side display only, never for authz decisions. */
+export function decodeTokenSub(token: string): string | null {
+  try {
+    const payload = token.split('.')[1]
+    const json = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')))
+    return typeof json.sub === 'string' ? json.sub : null
+  } catch {
+    return null
+  }
+}
+
 async function refreshAccessToken(): Promise<boolean> {
   const refresh = getRefreshToken()
   if (!refresh) return false
@@ -70,29 +82,31 @@ function createApiClient(): KyInstance {
     timeout: 30000,
     hooks: {
       beforeRequest: [
-        (request) => {
+        ({ request }) => {
           const token = getAuthToken()
-          if (token) {
-            // @ts-expect-error - ky types mismatch
-            request.headers.set('Authorization', `Bearer ${token}`)
-          }
+          if (token) request.headers.set('Authorization', `Bearer ${token}`)
         },
       ],
       afterResponse: [
-        // @ts-expect-error - ky types mismatch
-        async (request, _options, response) => {
+        async ({ request, options, response }) => {
           if (response.status === 401) {
             const refreshed = await refreshAccessToken()
             if (refreshed) {
               const token = getAuthToken()
               if (token) {
                 request.headers.set('Authorization', `Bearer ${token}`)
-                return ky(request, _options)
+                return ky(request, options as Options)
               }
             } else {
               clearAuthTokens()
-              if (typeof window !== 'undefined') {
-                window.location.href = '/en/login'
+              if (
+                typeof window !== 'undefined' &&
+                !window.location.pathname.endsWith('/login')
+              ) {
+                const locale = window.location.pathname.split('/')[1] === 'fa' ? 'fa' : 'en'
+                // Hard redirect outside the React tree (inside a ky hook).
+                // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+                window.location.href = `/${locale}/login`
               }
             }
           }
@@ -105,20 +119,35 @@ function createApiClient(): KyInstance {
 
 export const api = createApiClient()
 
+/** Login and persist tokens. Returns the raw token payload. */
+export async function loginAndStore(email: string, password: string): Promise<TokenResponse> {
+  const tokens = await ky
+    .post(`${BACKEND_URL}/auth/login`, { json: { email, password }, timeout: 15000 })
+    .json<TokenResponse>()
+  setAuthTokens(tokens.access_token, tokens.refresh_token)
+  return tokens
+}
+
+/** Register, then auto-login so tokens are stored too. */
+export async function registerAndLogin(email: string, password: string): Promise<TokenResponse> {
+  await ky.post(`${BACKEND_URL}/auth/register`, { json: { email, password }, timeout: 15000 })
+  return loginAndStore(email, password)
+}
+
 export async function apiGet<T>(path: string, options?: Options): Promise<T> {
-  return api.get(path, options).json()
+  return api.get(path, options).json<T>()
 }
 
 export async function apiPost<T>(path: string, options?: Options): Promise<T> {
-  return api.post(path, options).json()
+  return api.post(path, options).json<T>()
 }
 
 export async function apiPut<T>(path: string, options?: Options): Promise<T> {
-  return api.put(path, options).json()
+  return api.put(path, options).json<T>()
 }
 
 export async function apiDelete<T>(path: string, options?: Options): Promise<T> {
-  return api.delete(path, options).json()
+  return api.delete(path, options).json<T>()
 }
 
 export async function apiStream(path: string, options?: Options): Promise<Response> {

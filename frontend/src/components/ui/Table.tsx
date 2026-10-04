@@ -1,7 +1,7 @@
 'use client'
 
 import { clsx } from 'clsx'
-import { forwardRef, type TableHTMLAttributes } from 'react'
+import { type TableHTMLAttributes } from 'react'
 
 interface Column<T> {
   key: string

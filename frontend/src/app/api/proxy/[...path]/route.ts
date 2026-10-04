@@ -39,7 +39,7 @@ export async function POST(
   const contentType = request.headers.get('content-type') || ''
 
   let body: BodyInit | undefined
-  let headers: Record<string, string> = {}
+  const headers: Record<string, string> = {}
 
   if (contentType.includes('multipart/form-data')) {
     body = await request.blob()
@@ -150,7 +150,7 @@ async function proxyRequest(
   const contentType = request.headers.get('content-type') || ''
 
   let body: BodyInit | undefined
-  let headers: Record<string, string> = {}
+  const headers: Record<string, string> = {}
 
   if (contentType.includes('application/json')) {
     body = await request.text()
