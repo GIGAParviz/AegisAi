@@ -1,0 +1,282 @@
+# Aegis AI — Progress Log
+
+> **Ritual:** 09:00 → تسک‌های امروز + مبحث یادگیری | 21:00 → بازبینی (انجام‌شده / نشده + چرا + جمع‌بندی یادگیری)
+> Evidence sources: `git log`, `pytest`, file inspection. Agent appends the verdict each evening.
+
+---
+
+## 2026-08-29 — Day 1 (Phase 0: Foundation)
+
+### Learn
+- [ ] Python packaging: pyproject.toml, uv, venv, entry points → **carry-over to 2026-08-30**
+
+### Planned
+- [ ] T0.1 Rename ContextForge → AegisAI → **carry-over to 2026-08-30**
+- [ ] T0.2 Scaffold layout (db/services/schemas/policies/workers/tests) → **carry-over to 2026-08-30**
+
+> **2026-08-29 (شنبه):** روز برنامه‌ریزی — Life OS + تخته + ROADMAP کامیت شد. کاربر تصمیم گرفت اجرای تسک‌ها از **2026-08-30** شروع شود، نه امروز. هیچ تسک build برای امروز انتظار نمی‌رود.
+> **یادگیری:** قبل از شروع پروژه‌محور، ویدئوی ۱۲ ساعتهٔ FastAPI تمام شود (۳ ساعت مانده: JWT، Redis، دیتابیس). تسک‌های build پس از اتمام ویدئو فعال می‌شوند.
+
+### Report (fill at end of day)
+_(cron 21:01 — گزارشی از کاربر در این بازبینی ثبت نشد؛ در صورت ارسال گزارش، مرور صبح 2026-08-30 آن را تطبیق می‌دهد.)_
+
+### Agent verdict (21:00) — بدون گزارش کاربر
+| تسک | وضعیت | مدرک |
+|---|---|---|
+| Learn: Python packaging | شروع نشده (شیفت) | گیت ویدئوی ۱۲ ساعتهٔ FastAPI هنوز باز است؛ شواهد مطالعه‌ای ثبت نشده |
+| T0.1 Rename ContextForge → AegisAI | انجام نشده (انتظار نمی‌رفت) | `pyproject.toml` هنوز `name = "contextforge"`؛ README «# ContextForge»؛ grep در `.env`، `.example.env`، `app/core/config.py` هنوز contextforge دارد |
+| T0.2 Scaffold layout | انجام نشده (انتظار نمی‌رفت) | `app/` فقط `api/` و `core/` دارد؛ `db/ services/ schemas/ policies/ workers/` و `tests/` وجود ندارند |
+
+- انتظار امروز طبق تصمیم خود کاربر «صفر تسک build» بود (کامیت‌های `7f14504` و `4ed058d`) → هیچ مغایرتی وجود ندارد.
+- کار واقعی امروز: ۳ کامیت مستندسازی `d7109ae` (ROADMAP + task files + PROGRESS)، `7f14504` (شیفت Day 1 به 2026-08-30)، `4ed058d` (گیت ویدئو). `git status` تمیز.
+- pytest/ruff اجرا نشد: `.venv` در مخزن وجود ندارد و `tests/` هنوز ساخته نشده — baseline سبز به T0.4 (فردا) موکول می‌شود.
+- **جمع‌بندی یادگیری امروز:** بدون مبحث جدید — روز برنامه‌ریزی؛ فقط تعریف گیت «اتمام ویدئوی FastAPI قبل از build».
+- **فردا (Day 1 اجرایی = 2026-08-30):** T0.1 + T0.2 + مبحث Python packaging (هر سه carry-over امروز) — شرط شروع build: اتمام ۳ ساعت باقی‌ماندهٔ ویدئو (JWT، Redis، DB).
+
+---
+
+## 2026-08-30 - Day 1
+
+### Learn
+- [ ] Python packaging: pyproject.toml، uv، venv، console entry points (carry-over از 2026-08-29) → **دوباره carry-over به 2026-08-31**
+
+### Planned
+- [ ] T0.1 Rename ContextForge → AegisAI → `docs/tasks/T0.1-rename-aegisai.md` (carry-over از 2026-08-29) → **carry-over به 2026-08-31**
+- [ ] T0.2 Scaffold layout (db/services/schemas/policies/workers + tests) → `docs/tasks/T0.2-scaffold-layout.md` (carry-over از 2026-08-29) → **carry-over به 2026-08-31**
+
+> شرط شروع build: اتمام ۳ ساعت باقی‌ماندهٔ ویدئوی FastAPI (JWT، Redis، DB).
+
+### Report (fill at end of day)
+**گزارش کاربر (ثبت 2026-08-31 00:53):** ویدئو آموزش حذف شده بود → ادامه ممکن نشد؛ تصمیم: یادگیری با پروژهٔ AegisAI جلو برود. مصاحبهٔ کاری امروز انجام شد. ECG: گزارش تکمیل و ارسال شد + جلسه برگزار شد. CO2: اصلاحات انجام شد، فردا نمایش به استاد. لینکدین: کامنت‌ها گذاشته شد. ادعا: rename برای AegisAI انجام شد.
+
+### Agent verdict (21:00) — بدون گزارش کاربر
+| تسک | وضعیت | مدرک |
+|---|---|---|
+| Learn: Python packaging | شروع نشده (شیفت دوم) | `learning.md` هنوز «۳ ساعت مانده» را ثبت دارد؛ هیچ شواهد مطالعه‌ای امروز دیده نشد |
+| T0.1 Rename ContextForge → AegisAI | انجام نشده | `pyproject.toml` هنوز `name = "contextforge"`؛ README هنوز «# ContextForge»؛ grep هنوز در `.env`، `.example.env`، `app/core/config.py` نتایج دارد |
+| T0.2 Scaffold layout | انجام نشده | `app/` فقط `api/` و `core/` دارد؛ `db/ services/ schemas/ policies/ workers/` و `tests/` وجود ندارند |
+
+- تنها کامیت امروز: `36e2465` (10:48، مستندسازی مرور دیروز + برنامهٔ امروز). `git status` تمیز؛ هیچ کامیت کد یا تغییر فایل دیگری ثبت نشد.
+- pytest/ruff قابل اجرا نبود: نه `.venv` در مخزن هست، نه `tests/` ساخته شده و pytest/ruff روی پایتون سیستم نصب نیستند — T0.4 همچنان باز.
+- وضعیت گیت ویدئو: شواهدی از پیشرفت در ۳ ساعت باقی‌مانده (JWT، Redis، DB) ثبت نشد؛ شرط شروع build برقرار نبود، پس عدم اجرای تسک‌ها با گیت سازگار است اما Day 1 اجرایی کامل عقب افتاد.
+- **فردا (2026-08-31 = Day 2):** اولویت اول carry-over — T0.1 + T0.2 + مبحث Python packaging؛ سپس در صورت جا شدن: T0.3/T0.4/T0.6 طبق برنامهٔ اصلی. اگر تسک‌ها دوباره انجام نشوند، طبق قاعدهٔ ROADMAP نیاز به re-scoping صریح دارند (blocked > 2 days).
+
+### تطبیق گزارش کاربر (ثبت 2026-08-31 00:53)
+| ادعای کاربر | حکم | مدرک |
+|---|---|---|
+| ویدئو حذف شده → یادگیری با پروژهٔ AegisAI | ✅ پذیرفته شد؛ گیت ویدئو لغو | ROADMAP به‌روز شد |
+| مصاحبهٔ کاری | ✅ ثبت شد | گزارش کاربر (خارج از ریپو) |
+| گزارش ECG تکمیل و ارسال شد + جلسه | ✅ تأیید با شواهد | تغییرات `E:/projs/ECG/tools/` (thesis/eq/mathtype) در 2026-08-30 |
+| اصلاحات CO2 انجام شد؛ فردا به استاد | ✅ تأیید با شواهد | `outputs/main_paper_rev_02_*`، EndNote `.enl/.ris`، graphical abstract v2-v4 (2026-08-30) |
+| کامنت‌های لینکدین | ✅ پذیرفته شد | گزارش کاربر (پلتفرم بیرونی) |
+| rename AegisAI انجام شد | ❌ تأیید نشد | `grep -ci contextforge` در 00:53: README=2، pyproject.toml=1، config.py=1؛ `app/` اسکفولد نشده |
+
+- **نتیجهٔ تطبیق:** T0.1 باز است (سومین روز) — شاید rename دیگری انجام شده (پوشه/پروفایل) ولی مدرک تسک، grep تمیز + کامیت است. T0.2 باز. Day 1 اجرایی به 2026-08-31 منتقل؛ اجرای نشدن دوباره = re-scope اجباری طبق قاعده.
+
+### تکمیل دیرهنگام Day 1 (ثبت 2026-08-31 ~01:00) — کاربر اجرا کرد
+| تسک | حکم | مدرک (00:55) |
+|---|---|---|
+| T0.1 Rename ContextForge → AegisAI | ✅ تأیید | `grep -ric contextforge` در README/pyproject/config.py/.env/.example.env = **صفر** |
+| T0.2 Scaffold layout | ✅ تأیید | `app/db, services, schemas, policies, workers` + `tests/test_smoke.py` موجود |
+| Push به GitHub | ✅ تأیید | `git ls-remote origin` = `da0d729` مطابق لوکال؛ remote: `GIGAParviz/AegisAi` |
+| Learn: Python packaging | ◐ نیمه | pyproject/README ویرایش شده؛ ولی `.venv` نیست و `pydantic_settings` نصب نیست → import پروژه فعلاً fail است (T0.4) |
+
+- **هشدار زنجیرهٔ شواهد:** تاریخ گیت از نو ساخته شده (تک‌کامیت `da0d729 initial project`) و `docs` موقتاً ignore شده بود — کامییت‌های قبلی (d7109ae…3d7a5a5) از تاریخ حذف شدند. محتوای PROGRESS/ROADMAP روی دیسک سالم است و از همین کامیت دوباره track می‌شود. قانون از این پس: **تاریخ گیت پروژه rewrite نمی‌شود** — شواهد ریتوال در همان تاریخ accumulate می‌شوند.
+- جمع‌بندی: Day 1 اجرایی با تأخیر بسته شد. فردا (2026-08-31 = Day 2): T0.3 + T0.4 (venv با uv → pytest سبز → ruff) + T0.6 (CI) — دوباره روی schedule.
+
+---
+
+## 2026-08-31 - Day 2
+
+### Learn
+- [x] pytest essentials: fixtures, parametrize, monkeypatch; ruff — همراه با اجرای عملی T0.4 (نتیجهٔ واقعی: 3 passed + ruff clean)
+
+### Planned
+- [x] T0.3 Settings expansion + tests/test_config.py — **تأیید** (کامیت `30c2b04`)
+- [x] T0.4 Green baseline — **تأیید** (کامیت `cec16fc`؛ `pytest -q` → 3 passed، `ruff check .` → clean، venv با uv)
+- [ ] T0.6 CI workflow → carry-over به 2026-09-01
+
+### Report (fill at end of day)
+**گزارش کاربر (ثبت 2026-09-01 00:16):** تسک‌های AegisAI T0.3/T0.4 انجام شد. سناریو ویدئو اینستا برنامه‌ریزی شد. CO2 به استاد تحویل شد — انتظار بازخورد. ECG تمام شد و رفت («کاری دیگه نمونده و اوکی شد»). لینکدین: کامنت گذاشته شد.
+
+### Agent verdict (21:00 → ثبت 00:16 با شواهد)
+| تسک | وضعیت | مدرک |
+|---|---|---|
+| T0.3 Settings expansion | ✅ بسته شد | کامیت `30c2b04` + tests/test_config.py |
+| T0.4 Green baseline | ✅ بسته شد | کامیت `cec16fc`؛ بازاجرای agent در 00:16: **3 passed** / ruff **clean** / `.venv` موجود |
+| T0.6 CI workflow | ◐ باز | پوشهٔ `.github/workflows/` وجود ندارد |
+
+- اجرای مسیر یادگیری «با دست» تأیید می‌شود: venv با uv ساخته شده و تست‌ها قابل بازاجرای مستقل‌اند — این دیگر اسناد نیست، baseline سبز است. 🟢
+- جریان‌های غیر AegisAI (گزارش کاربر): سناریو ویدئو اینستا ✓ آماده، CO2 تحویل استاد ✓ در انتظار بازخورد، ECG بسته شد ✓، لینکدین کامنت ✓.
+- **فردا (2026-09-01 = Day 3):** T0.5 (Docker Desktop) + T0.6 (CI) + مبحث Containers 101. نکتهٔ ظرفیت: روز نصب و راه‌اندازی است، فشار کمتر.
+- **تسک‌های تازهٔ کاربر برای 2026-09-01 (خارج از AegisAI):** (۱) تست عملی کدهای LangChain — مدرک: یادداشت/نتیجهٔ اجرا، (۲) بررسی سناریوهای پست اینستا + آماده‌سازی و در صورت امکان ضبط ویدئو — مدرک: فایل ویدئو، (۳) خبر گرفتن از سلیمی دربارهٔ شرکت — مدرک: پیام/تماس. پست لینکدین از برنامهٔ نزدیک حذف شد (تصمیم کاربر)؛ لینکدین = فقط کامنت روزانه.
+
+---
+
+## 2026-09-01 - Day 3
+
+### Learn
+- [x] Containers 101: Docker Desktop/WSL2, images vs containers — مفهوم مطالعه شد (گزارش کاربر)؛ اجرا → مانده (verdict پایین)
+
+### Planned
+- [x] T0.6 CI workflow — **بسته شد**: `.github/workflows/ci.yml` روی ریموت (ruff + pytest، Python 3.11، `pip install -e ".[dev]"`)؛ اجرای GitHub Actions از API: **`CI | 4e47b23 | completed | success`**. ۱۰ کامیت از 2026-08-31 ظهر.
+- [x] T0.5 Docker — **بسته شد (اصلاح حکم قبلی 2026-09-02)**: کاربر روشن کرد — Docker در دیستروی مجزای WSL به نام `DockerEngine` نصب است و با `wsl -d Dockerengine` اجرا می‌شود. تأیید agent: `wsl -d Dockerengine -- docker --version` → Docker 29.1.3؛ `docker run --rm hello-world` → موفق. (چرا اشتباه رد شد: من فقط PATH ویندوز/Ubuntu را چک کرده بودم.)
+- [x] LangChain probe (تسک کاربر) — **انجام شد**: mini project در `E:\projs\AegisAI\my_tests\` (main, config, models, service, session)؛ نتیجهٔ کاربر: «خیلی خوبه». این مسیر عمداً gitignored است (`.gitignore` خطوط 10-11: `.my_tests/`, `my_tests/`) → شواهد = فایل‌های لوکال + گزارش کاربر.
+
+### Report (fill at end of day)
+**گزارش کاربر (ثبت 2026-09-02 02:15):** T0.5 و T0.6 انجام شد؛ CI در گیت‌هاب درست کار کرد. ویدئوی اینستا ضبط شد — ادیت مانده و ضبط ویس دردسر زیاد دارد → جستجوی روش سریع/کیفیت‌دار برای ادیت و انیمیشن. کامنت‌های لینکدین ✓. پیشنهاد مصاحبهٔ کاری: جلسهٔ جمعه **۴ سپتامبر** ساعت ۱۴:۳۰. LangChain تست شد و mini project ساخته شد. سلیمی: تماس گرفته شد → جلسهٔ پنج‌شنبه ۳ سپتامبر صبح در شرکت. باشگاه: روزهای زوج (شنبه/دوشنبه/چهارشنبه) ساعت ۱۹:۳۰. شروع برنامهٔ تولید محتوا و بازاریابی برای سایت خودش gymmim.ir.
+
+### Agent verdict (ثبت 02:15 با شواهد)
+| تسک | وضعیت | مدرک |
+|---|---|---|
+| T0.6 CI workflow | ✅ بسته شد | GitHub API: `CI on 4e47b23 → success`؛ لوکال HEAD = ریموت HEAD |
+| T0.5 Docker Desktop | ❌ باز — نصب مجدد لازم | `docker.exe` یافت نشد (Program Files + WSL)؛ لاگ حذف/نصب قدیمی |
+| LangChain probe | ✅ بسته شد | `my_tests/` موجود (gitignored عمدی) |
+
+- پیوند یادگیری: نتیجهٔ LangChain probe («خیلی خوبه» + mini project) ورودی تصمیم مرحلهٔ ۲ یادگیری است — به `streams/learning.md` منتقل شد.
+- ⚠️ از ثبتِ بازبینی ۲۱:۰۰ (کرون): `ruff check .` → 2 خطا در `my_tests/` (F401) — baseline سبز Day 2 شکسته شده؛ و `api_key` هاردکد در `my_tests/memory_mng.py`. **گام صبح Day 4: ruff fix در my_tests + انتقال api_key به `.env`** (قبل از هر کامیت). T0.5 هم سه‌روزه شده → نصب مجدد Docker فردا یا re-scope صریح.
+- **فردا (2026-09-02 = Day 4):** اول: پاکسازی my_tests (ruff + key) → بعد T1.1/T1.2 (Learn: SQLAlchemy async) · ادیت ویدئو (خط تولید جدید) · آماده‌سازی جلسهٔ سلیمی (پنج‌شنبه صبح) · مصاحبهٔ جمعه ۴ سپتامبر ۱۴:۳۰ (تاریخ درست‌شده).
+
+---
+
+## 2026-09-02 - Day 4
+
+### Learn
+- [ ] SQLAlchemy 2.0 async: engine, sessionmaker, unit-of-work
+
+### Planned
+- [x] P4.0 پاکسازی my_tests (اولویت اول، carry-over از verdict Day 3): ruff fix (F401 ×2 در `my_tests/`) + انتقال api_key هاردکد در `my_tests/memory_mng.py` به `.env`
+- [x] T1.1 لایه دیتابیس async (engine.py + base.py + tests/test_db.py) → `docs/tasks/T1.1-async-db-layer.md` (carry-over از Day 3)
+- [ ] T1.2 مدل User + مهاجرت Alembic → `docs/tasks/T1.2-user-model-alembic.md`
+
+> پیش‌نیاز: `aiosqlite` و `alembic` هنوز در pyproject نیستند — گام صفر هر تسک: `uv add aiosqlite alembic` (aiosqlite به dev).
+> تعهدات بیرونی امروز: آماده‌سازی جلسهٔ سلیمی (پنجشنبه صبح) · ادیت ویدئوی اینستا · باشگاه چهارشنبه ۱۹:۳۰ → ظرفیت build محدود، T1.1 اولویت بر T1.2 است.
+
+### Report (fill at end of day)
+_(بازبینی ۲۱:۰۰ کرون بدون گزارش کاربر — شواهد دیسک ملاک است.)_
+
+### Agent verdict (21:00) — بدون گزارش کاربر (ثبت 2026-09-02 23:20 با شواهد)
+| تسک | وضعیت | مدرک |
+|---|---|---|
+| P4.0 پاکسازی my_tests | ◐ نیمه‌کاره | api_key ✅ حل شده: کلید از `memory_mng.py` به `my_tests/.env` منتقل شده (تنها ارجاع: `my_tests/config.py:6` و `service.py:20`؛ my_tests عمداً gitignored)؛ ruff در مخزن ✅: `ruff check --fix` اجرا شد → I001 در `app/db/base.py` رفع شد → اکنون `ruff check app tests` **تمیز**؛ در `my_tests/main.py` هنوز ۱ خطای I001 باقی است (خارج از مخزن، غیربلوک‌کننده) |
+| T1.1 لایه دیتابیس async | ✅ انجام شد — کد کامل ولی **کامیت نشده** | `app/db/engine.py` (create_async_engine + async_sessionmaker) و `app/db/base.py` (DeclarativeBase + NAMING_CONVENTION) موجود؛ `tests/test_db.py` → بازاجرای agent: **4 passed** (sqlite+aiosqlite in-memory، pytest-asyncio)؛ `aiosqlite` به pyproject اضافه شد + `[dependency-groups] dev` (pytest, pytest-asyncio)؛ `git status`: `M pyproject.toml`، `M app/core/config.py`، `M uv.lock`، `?? app/db/*`، `?? tests/test_db.py` |
+| T1.2 مدل User + Alembic | ❌ شروع نشده | `app/db/models/` وجود ندارد؛ `alembic/` و `alembic.ini` هم نیستند |
+
+### تکمیل شب Day 4 (ثبت 2026-09-03 01:10 — گزارش کاربر + شواهد)
+**گزارش کاربر:** روز بد بود؛ فقط T1.1 تمام شد، باشگاه رفت، برنامهٔ ضبط ویدئو برای gymmir.ir ریخته شد (فردا تا ساعت ۳؛ بعدش باشگاه)، لینکدین کامنت ✓. همچنین سؤال کرد: «Learn SQLAlchemy async یعنی چه؟» → مفهوم در چت باز شد.
+| تسک | حکم | مدرک (01:10) |
+|---|---|---|
+| T1.1 async DB layer | ✅ **بسته شد** | کامیت `cec316d` «feat: add async database layer»؛ بازاجرای agent: **5 passed** / ruff **All checks passed** |
+| T1.2 پیش‌ groundwork | ◐ **نصفه — عمداً؛ فردا (Day 5) تکمیل می‌شود (تصریح کاربر)** | روی دیسک + کامیت‌شده همراه T1.1: `alembic.ini`، `migrations/`، `app/db/models/user.py` (UserRole enum + فیلدها ✓)، `tests/test_user_model.py` — مانده: تکمیل migration واقعی + roundtrip کامل + بازبینی اسم ستون `create_at`→`created_at` |
+| رفع ruff باقی‌مانده | ✅ | `ruff check --fix` → 8 خطا (7 fixable) رفع شد؛ الان تمیز |
+| `aegis.db` سرگردان | ✅ هندل شد | `*.db` به .gitignore اضافه شد (فایل sqlite تست لوکال نباید track شود) |
+
+- **نکتهٔ روزِ بد (بی‌تعارف):** «روز بد»ِ تو شامل: یک تسک بسته + یک تسک نیمه‌کاره + باشگاه + برنامهٔ محتوایی gymmim + کامنت لینکدین = یک روز **معمولیِ خوب** در هر پروژهٔ واقعی. استاندارد «فقط تونستم T1.1» را که خودت در تختهٔ شب اول نوشتی بشکن: مقایسه با تابلو، نه با حس.
+- **فردا (2026-09-03 = Day 5، پنج‌شنبه):** ☀️ صبح جلسهٔ سلیمی (اولویت مطلق) · بعدازظهر: **T1.2 تکمیل نیمهٔ دوم** (migration واقعی + roundtrip) → push · ۲۱:۳۰ مرور هفتگی Life OS (اولین) · عصر: ضبط ویدئو gymmim تا ۱۹:۰۰ → باشگاه.
+- 🔧 **اشکال‌زدایی CI (شب، توسط agent):** CI روی کامیت‌های `cec316d`/`7ad282d` failure بود درحالی‌که لوکال سبز بود. ریشه: (۱) `pytest-asyncio` فقط در dependency-group uv بود نه در extras `[dev]` که CI نصب می‌کند؛ (۲) **علت اصلی**: pip flat-layout error — دو پکیج سطح‌بالا `app/` و `migrations/` → با `[tool.setuptools.packages.find] include=["app*"]` حل شد. نتیجه: `ae9f375` → **CI success** ✅. درس: CI سبز روی گیت‌هاب ملاک است، نه pytest سبز لوکال — از این به بعد هر push تا تیک سبز دنبال می‌شود.
+
+---
+
+## 2026-09-03 - Day 5
+
+### Learn
+- [x] JWT flows: access/refresh، rotation، expiry trade-offs — تئوری (brief صبح؛ اجرای عملی فردا در T1.3)
+
+### Planned
+- [x] T1.2 مدل User + Alembic — **بسته شد**: کامیت `88f6296` (rename created_at، env.py از settings، migration اصلاح، تست‌ها)؛ GitHub Actions: **`88f6296 → success`**؛ بازاجرای agent: 5 passed
+- [ ] T1.3 JWT auth → **فردا (Day 6) — تسک اصلی**
+- [ ] اینستا gymmim: انتشار ویدئو ضبط‌شده → تسک جدید جریان gymmim (برنامه فردا)
+- ◐ پست لینکدین: پیش‌نویس رد شد (تصمیم کاربر: «خوب نیست») — محتوای جدید با کاربر طراحی می‌شود؛ کامنت‌های روزانه ادامه دارند
+
+### Report (fill at end of day)
+**گزارش کاربر (ثبت 2026-09-03 19:07):** جلسهٔ صبح سلیمی رفت ✓ (جزئیات هنوز)، ویدئو gymmim ضبط شد ✓، T1.2 انجام + پوش + Actions تأیید ✓، پیش‌نویس پست لینکدین رد شد — بعداً محتوایش را می‌گوید.
+
+### Agent verdict (19:07 — با شواهد)
+| تسک | وضعیت | مدرک |
+|---|---|---|
+| T1.2 User + Alembic | ✅ **بسته شد** | `88f6296`؛ Actions: success؛ 5 passed؛ created_at ✓؛ migration rename ✓ |
+| جلسهٔ سلیمی | ✓ انجام شد | گزارش کاربر — جزئیات/خروجی: نگرفته، فردا پرسیده می‌شود |
+| ویدئو gymmim | ✓ ضبط شد | گزارش کاربر — فاز انتشار به جریان gymmim منتقل شد |
+| پست لینکدین | ⏸ موکول | پیش‌نویس رد شد؛ محتوای تازه با کاربر طراحی می‌شود |
+
+- **Phase 1: 3/5** (T1.1 ✅ T1.2 ✅ + T1.5 بعدها؛ مانده T1.3 JWT و T1.4 RBAC)
+- **فردا (2026-09-04 = Day 6، جمعه):** صبح/ظهر: T1.3 JWT auth (تسک اصلی روز) · ۱۴:۳۰ مصاحبه کاری · عصر: اینستا gymmim — انتخاب/ادیت ویدئو برای پست اول · جمعه = فقط این‌ها، بقیه بافر.
+| Learn: SQLAlchemy 2.0 async | ◐ عملی تمرین شد | roundtrip تست با async_sessionmaker + `expire_on_commit=False` روی aiosqlite in-memory نوشته شده و سبز است؛ جمع‌بندی مفهومی به گزارش کاربر موکول است |
+
+- **کامیت‌های امروز:** فقط `82e8b53` (09:16) «docs: plan Day 4». تمام کد T1.1 هنوز روی دیسک است و کامیت نشده. وضعیت ریموت: لوکال ۱ کامیت جلوتر از `origin/main` است (`82e8b53` فرزند `33d1ada`؛ ahead=1/behind=0) → push عادی کافی است، نه pull/merge.
+- **اجرای agent:** `ruff check --fix app tests` (فقط مرتب‌سازی import در `app/db/base.py`، بدون تغییر منطقی) → سپس `pytest -q` → **4 passed**. baseline سبز حفظ شد.
+- نکته‌های کیفی برای کامیت کاربر: (۱) `engine.py` تابع `get_sessio` — غلط تایپی، باید `get_session` باشد؛ (۲) `pyproject.toml` هم‌زمان `[project.optional-dependencies].dev` و `[dependency-groups].dev` دارد — یکی باید حذف شود (تعارض uv/pip)؛ (۳) `DbSettings` (postgres_url) در `config.py` کامنت شده — سازگار با sqlite پیش‌فرض، اما قبل از T1.5/T7.1 تصمیم Postgres لازم است.
+- **جمع‌بندی یادگیری امروز:** SQLAlchemy 2 async عملاً از مسیر تست سبز تمرین شد (engine → sessionmaker → add/commit/select روی aiosqlite in-memory)؛ جمع‌بندی مفهومی منتظر گزارش کاربر.
+- **فردا (2026-09-03 = Day 5):** اول کامیت + push کار T1.1 (شواهد امروز فقط روی دیسک است — فردا بدون کامیت از دست می‌رود) → T1.2 (User model + Alembic init/migration؛ همراه رفع `get_sessio` و تعیین تکلیف dev-dependency تکراری) + Learn: JWT flows (T1.3 بعدی است) · تعهدات بیرونی: جلسهٔ سلیمی (پنجشنبه صبح) · ادیت ویدئوی اینستا · مصاحبهٔ جمعه ۴ سپتامبر ۱۴:۳۰.
+
+---
+
+## 2026-09-03 - Day 5
+
+### Learn
+- [ ] JWT flows: access/refresh, rotation, expiry trade-offs — درس کامل صبح (پیش‌نیاز T1.3)
+
+### Planned
+- [x] T1.2 تکمیل نیمهٔ دوم (carry-over Day 4): ستون `create_at`→`created_at` در مدل + revision، migration از صفر روی dev (`aegis.db` حذف/ساخت مجدد)، `alembic upgrade head`، roundtrip کامل، commit+push → `docs/tasks/T1.2-user-model-alembic.md`
+- [ ] T1.3 JWT auth: `app/core/security.py` (passlib + pyjwt؛ `jwt_secret`/`jwt_alg` از T0.3 موجود) + `app/api/auth.py` (register 201/409، login 401، refresh) + `tests/test_auth.py` → `docs/tasks/T1.3-jwt-auth.md`
+- [ ] بعد از هر push: تیک سبز CI در GitHub Actions (قاعدهٔ برقرار از `ae9f375`)
+
+> تعهدات بیرونی امروز: ☀️ صبح جلسهٔ سلیمی (اولویت مطلق) · ۲۱:۳۰ مرور هفتگی Life OS (اولین) · عصر ضبط ویدئو gymmim · مصاحبهٔ جمعه ۴ سپتامبر ۱۴:۳۰ (آماده‌سازی امروز/فردا صبح).
+> با این ظرفیت، T1.3 محتمل است به فردا carry-over شود — اولویت: T1.2 کامل بسته شود و baseline سبز بماند.
+
+---
+
+## 2026-09-04 - Day 6
+
+### Learn
+- [x] JWT flows: access/refresh، rotation، expiry trade-offs — درس کامل صبح (brief) + اجرای عملی در T1.3
+
+### Planned
+- [x] **T1.3 JWT Auth** — **بسته شد**: `app/core/security.py` (bcrypt + JWT HS256، access 30min/refresh 7d، token rotation)، `app/api/auth.py` (register 201/409، login 401/403، refresh 401 + rotation)، `app/schemas/auth.py`، `app/api/deps.py` (CurrentUser dependency)، `tests/test_auth.py` (5 test شامل edge cases) — **CI تایید شده (سبز)**
+- [ ] اینستا gymmim: ادیت فوتاژ ضبط‌شده + انتشار Reel اول → تسک جریان gymmim
+- [ ] پست لینکدین: محتوای نهایی از کاربر → انتشار (پیش‌نویس قبلی رد شده)
+- [ ] T1.4 RBAC: `app/core/rbac.py` + role check در `get_current_user` + tests
+- [ ] T1.5 Rate Limit + CORS: `app/core/rate_limit.py` + middleware + tests
+
+### Report (fill at end of day)
+**گزارش کاربر (ثبت 2026-09-04 19:xx):** جلسهٔ صبح سلیمی رفت ✓، T1.3 انجام + پوش + Actions تأیید ✓، فوتاژ gymmim ضبط شده ✓، معماری/سیستم‌دیزاین کامل ✓ (سند + Canvas در Obsidian)، پیش‌نویس پست لینکدین رد شد — محتوای جدید بعداً.
+
+### Agent verdict (19:xx — با شواهد)
+| تسک | وضعیت | مدرک |
+|---|---|---|
+| T1.3 JWT Auth | ✅ **بسته شد** | کد کامل + `tests/test_auth.py` 5 passed + CI سبز |
+| جلسهٔ سلیمی | ✅ انجام شد | گزارش کاربر — جزئیات ۳ خط در streams |
+| ویدئو gymmim | ✓ ضبط شد | فاز ادیت/انتشار فردا |
+| معماری/سیستم‌دیزاین | ✅ کامل | `AegisAI — سیستم‌دیزاین کامل.md` + `AegisAI System Design.canvas` در Obsidian |
+| پست لینکدین | ⏸ موکول | محتوای جدید با کاربر طراحی می‌شود |
+
+- **Phase 1: 3/5** (T1.1 ✅ T1.2 ✅ T1.3 ✅ — مانده T1.4 RBAC و T1.5 Rate Limit)
+- **فردا (2026-09-05 = Day 7، شنبه):** WIP: T1.4 RBAC + T1.5 Rate Limit/CORS · اینستا gymmim ادیت/انتشار · پست لینکدین · باشگاه ۱۹:۳۰ · مرور ۲۱:۰۰/۲۱:۳۰
+
+
+
+---
+
+## 2026-09-28 - Audit کامل (Day ~29)
+
+### شواهد زنده (اجراشده همین حالا)
+- `pytest -q` → **34 passed, 1 skipped** (skip = `test_llm_integration.py` غیرفعال عمداً)
+- `ruff check .` → All checks passed
+- CI روی `ac1c1a3` (HEAD ریموت) → **success**؛ runs قبلی `dbb71ac`/`8ae6935` سبز
+- working tree: فقط `M app/services/context_builder.py` (رفع newline انتهای فایل) + فایل دست‌گرب `tests/ttt.py` (کامیت‌شده!)
+
+### وضعیت فازها بر اساس git log
+| فاز | تسک‌ها | وضعیت |
+|---|---|---|
+| 0 Foundation | T0.1–T0.6 | ✅ 6/6 |
+| 1 Gateway | T1.1–T1.5 | ✅ 5/5 (`d55f1e4` Redis rate-limit+CORS) |
+| 2 Data Engine | T2.1–T2.6 | ✅ 6/6 (`432ae23` upload، `7a904ca` celery، `fa3661a` chunk، `53ba4a5` embeds، `84aaf91` vector، `0352406` reranker) |
+| 3 Reasoning | T3.1 ✅، T3.2 🔶، T3.3 ✅ | 2.5/3 — T3.2 (llama.cpp محلی) مدرک ندارد؛ API ریموت جای آن کار می‌کند |
+| 4 Harness | T4.1 ✅ (`ac1c1a3` context builder+frontend)؛ T4.2 🔄 در حال انجام | 1/5 |
+| 5–7 | T5.1–T7.4 | ⬜ 0/12 |
+
+### بدهی‌های ثبت‌شده
+1. `tests/ttt.py` — اسکرچپاد Redis import، **کامیت شده در repo**. باید حذف شود.
+2. INDEX.md و status تسک‌ها 20+ روز عقب بود — با همین audit اصلاح شد.
+3. `PROGRESS.md` از 2026-09-05 ساکت بود — لاگ روزانه باز می‌شود.
+4. T3.2: تصمیم نهایی — GGUF محلی یا API ریموت دائمی؟ اگر ریموت، تسک با یادداشت بسته شود.

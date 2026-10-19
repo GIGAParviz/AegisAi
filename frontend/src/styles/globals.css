@@ -1,0 +1,259 @@
+@import 'tailwindcss';
+
+/* ── AegisAI theme: warm paper, olive accent, plum warmth ───────────── */
+@theme {
+  --color-bg: #f3f0e3;
+  --color-text: #293222;
+  --color-muted: #646659;
+  --color-faint: #77796a;
+  --color-accent: #767c4c;
+  --color-accent-deep: #5c6140;
+  --color-warm: #883250;
+  --color-line: #d7d5c6;
+  --color-panel: #ece9dc;
+  --color-paper: #faf8ef;
+  --color-ok: #68734b;
+  --color-warn: #b08a3c;
+  --color-info: #4c767c;
+
+  --font-serif: var(--font-geist-serif-fallback, Georgia), 'Times New Roman', serif;
+  --font-sans: var(--font-inter), Inter, Arial, sans-serif;
+  --font-mono: var(--font-plex-mono), 'IBM Plex Mono', ui-monospace, monospace;
+  --font-vazir: var(--font-vazirmatn), Vazirmatn, Tahoma, sans-serif;
+
+  --shadow-soft: 0 1px 2px rgba(41, 50, 34, 0.05), 0 8px 24px -12px rgba(41, 50, 34, 0.14);
+  --shadow-lift: 0 2px 4px rgba(41, 50, 34, 0.07), 0 16px 40px -16px rgba(41, 50, 34, 0.22);
+}
+
+:root {
+  --bg: #f3f0e3;
+  --text: #293222;
+  --muted: #646659;
+  --faint: #77796a;
+  --accent: #767c4c;
+  --warm: #883250;
+  --line: #d7d5c6;
+  --panel: #ece9dc;
+  --serif: Georgia, 'Times New Roman', serif;
+  --sans: Inter, Arial, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 36px;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4' seed='19'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.055'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(0deg, rgba(95, 87, 61, 0.018) 0 1px, transparent 1px 7px),
+    radial-gradient(ellipse at 20% 0%, rgba(255, 255, 250, 0.44), transparent 56%);
+  background-size: 180px 180px, 100% 7px, 100% 100%;
+  background-blend-mode: multiply, normal, normal;
+  background-attachment: fixed;
+  color: var(--text);
+  font: 16px/1.65 var(--sans);
+}
+
+[dir='rtl'] body {
+  font-family: var(--font-vazir), Vazirmatn, Tahoma, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--warm);
+  outline-offset: 3px;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+::selection {
+  background: #dfe3c8;
+  color: var(--text);
+}
+
+/* ── Typography helpers ─────────────────────────────────────────────── */
+
+.wrap {
+  width: min(1320px, calc(100% - 120px));
+  margin-inline: auto;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.kicker {
+  font: 12px var(--font-mono);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.kicker::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  flex: none;
+  background: #778052;
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px #e6e6d8;
+}
+
+.display {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
+  margin: 0;
+}
+
+[dir='rtl'] .display {
+  font-family: var(--font-vazir), Vazirmatn, Tahoma, sans-serif;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+
+.prose-serif {
+  font-family: var(--font-serif);
+}
+
+[dir='rtl'] .prose-serif {
+  font-family: var(--font-vazir), Vazirmatn, Tahoma, sans-serif;
+}
+
+/* Latin headings use the serif display face; Persian switches to Vazirmatn
+   via the .display rule above — applied through classes, never bare h tags,
+   so Tailwind utilities stay in control. */
+
+/* ── Surfaces ───────────────────────────────────────────────────────── */
+
+.card-paper {
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-soft);
+}
+
+.card-panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+}
+
+.hairline {
+  border-color: var(--color-line);
+}
+
+/* ── Scrollbars ─────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #a6b28c;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #889b6c;
+}
+
+/* ── Motion ─────────────────────────────────────────────────────────── */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.fade-up {
+  animation: fade-up 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── Responsive wrap ────────────────────────────────────────────────── */
+
+@media (max-width: 1150px) {
+  .wrap {
+    width: calc(100% - 70px);
+  }
+}
+
+@media (max-width: 800px) {
+  .wrap {
+    width: calc(100% - 40px);
+  }
+}
+
+@media (max-width: 430px) {
+  .wrap {
+    width: calc(100% - 24px);
+  }
+}

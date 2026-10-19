@@ -1,0 +1,303 @@
+{
+  "metadata": {
+    "title": "AegisAI — Production AI Knowledge Workspace",
+    "description": "Document ingestion, hybrid retrieval, grounded RAG chat, policy-gated agents, evaluation and observability — one calm workspace."
+  },
+  "common": {
+    "loading": "Loading…",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "back": "Back",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "open": "Open",
+    "search": "Search",
+    "upload": "Upload",
+    "status": "Status",
+    "role": "Role",
+    "none": "None",
+    "live": "Live",
+    "comingSoon": "Coming soon",
+    "notImplemented": "Not wired to the backend yet",
+    "viewDashboard": "Open dashboard",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "logout": "Logout",
+    "menu": "Menu",
+    "language": "Language",
+    "toggleSidebar": "Toggle navigation",
+    "collapse": "Collapse"
+  },
+  "nav": {
+    "workspace": "Workspace",
+    "knowledge": "Knowledge",
+    "governance": "Governance",
+    "insight": "Insight",
+    "account": "Account",
+    "dashboard": "Dashboard",
+    "documents": "Documents",
+    "chat": "RAG Chat",
+    "search": "Hybrid Search",
+    "approvals": "Approvals",
+    "audit": "Audit Log",
+    "traces": "Traces",
+    "evals": "Evaluations",
+    "system": "System",
+    "settings": "Settings",
+    "admin": "Admin"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "welcomeBack": "Welcome back",
+    "signInSubtitle": "Sign in to your AegisAI workspace",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "invalidEmailOrPassword": "Invalid email or password",
+    "tooManyRequests": "Too many attempts. Please wait a moment.",
+    "unexpectedError": "Could not reach the API. Is the backend running on :8000?",
+    "noAccount": "New here?",
+    "hasAccount": "Already have an account?",
+    "createAccount": "Create your account",
+    "registerSubtitle": "Start building your AI knowledge workspace",
+    "passwordHint": "At least 8 characters",
+    "passwordsDiffer": "Passwords do not match",
+    "emailTaken": "This email is already registered",
+    "invalidEmail": "Enter a valid email address",
+    "emailRequired": "Email is required",
+    "passwordRequired": "Password is required",
+    "backHome": "Back to home",
+    "signInRequired": "Sign-in required",
+    "sessionEnded": "Your session ended or was never started.",
+    "goToLogin": "Go to sign in"
+  },
+  "landing": {
+    "badge": "Self-hosted · Deny-by-default · Built to be audited",
+    "heroLine1": "Your documents.",
+    "heroLine2": "Answered with proof.",
+    "subtitle": "AegisAI ingests your files, indexes them for hybrid search, and answers questions with citations — behind a policy gate that records every decision.",
+    "ctaPrimary": "Open the workspace",
+    "ctaSecondary": "See the pipeline",
+    "pipelineKicker": "The pipeline",
+    "pipelineTitle": "Seven stages, one accountable loop",
+    "pipelineDesc": "Every request travels the same guarded path — nothing reaches an action without passing the gate.",
+    "stages": {
+      "gateway": {
+        "name": "Gateway",
+        "desc": "FastAPI with JWT auth, RBAC and rate limiting. Every call carries a trace id."
+      },
+      "context": {
+        "name": "Context",
+        "desc": "Conversation history plus retrieved, citation-ready passages from Qdrant."
+      },
+      "reasoning": {
+        "name": "Reasoning",
+        "desc": "OpenAI-compatible LLMs or a local llama.cpp server — one provider abstraction."
+      },
+      "policy": {
+        "name": "Policy gate",
+        "desc": "Deny by default. Role, allowlist and constraints checked; every verdict audited."
+      },
+      "execution": {
+        "name": "Guarded execution",
+        "desc": "Actions run from a strict registry of typed tools — no free-form execution."
+      },
+      "verify": {
+        "name": "Verify",
+        "desc": "Schema and business-rule validation with retry-and-feedback repair loops."
+      },
+      "observe": {
+        "name": "Observe",
+        "desc": "Langfuse traces, golden-dataset evaluations, quality gates in CI."
+      }
+    },
+    "featuresKicker": "What works today",
+    "featuresTitle": "Live in this build",
+    "feat": {
+      "ingest": {
+        "name": "Document ingestion",
+        "desc": "Upload PDF, DOCX, Markdown or text — extraction, chunking and embedding run through a Celery worker."
+      },
+      "chat": {
+        "name": "Streaming RAG chat",
+        "desc": "Token-by-token SSE answers with a trace id on every response, so anything you read can be traced."
+      },
+      "searchReady": {
+        "name": "Hybrid index",
+        "desc": "Dense + sparse vectors in a single Qdrant collection with RRF fusion — search UX lands next."
+      },
+      "auth": {
+        "name": "Auth & RBAC",
+        "desc": "Access/refresh JWT rotation, admin/user/agent roles, per-route dependencies."
+      },
+      "policy": {
+        "name": "Policy audit trail",
+        "desc": "An immutable table records every allow/deny with actor, action and reason."
+      },
+      "local": {
+        "name": "Local-first models",
+        "desc": "Run quantized GGUF models on 4GB of VRAM, or point at any OpenAI-compatible API."
+      }
+    },
+    "roadmapKicker": "Roadmap",
+    "roadmapTitle": "Where this is going",
+    "roadmapDesc": "Built one verified phase at a time — checkmarks follow passing tests, not intentions.",
+    "phases": {
+      "p0": {
+        "title": "Foundation",
+        "desc": "Repo layout, pytest baseline, CI"
+      },
+      "p1": {
+        "title": "Gateway & security",
+        "desc": "DB, users, JWT, RBAC, rate limits"
+      },
+      "p2": {
+        "title": "Data engine",
+        "desc": "Ingestion, chunking, embeddings, Qdrant hybrid search"
+      },
+      "p3": {
+        "title": "Reasoning",
+        "desc": "LLM provider abstraction, local GGUF serving, SSE streaming"
+      },
+      "p4": {
+        "title": "Agent harness",
+        "desc": "Context builder, action registry, policy gate, verifier"
+      },
+      "p5": {
+        "title": "Agentic runtime",
+        "desc": "LangGraph loops, MCP tools, human-in-the-loop approvals"
+      },
+      "p6": {
+        "title": "Evaluation",
+        "desc": "Faithfulness & recall metrics, quality gates in CI"
+      },
+      "p7": {
+        "title": "Deployment",
+        "desc": "Docker Compose, Nginx TLS, Kubernetes"
+      }
+    },
+    "statusDone": "Verified",
+    "statusActive": "In progress",
+    "statusNext": "Planned",
+    "ctaTitle": "Ready to build?",
+    "ctaDesc": "Clone the repo, point it at your model, and make the workspace yours.",
+    "createAccount": "Create your account",
+    "ctaGithub": "View on GitHub"
+  },
+  "dashboard": {
+    "title": "Overview",
+    "subtitle": "Your knowledge workspace at a glance.",
+    "docs": "Documents",
+    "docsHint": "Uploaded from this device",
+    "ready": "Ready",
+    "processing": "Processing",
+    "failed": "Failed",
+    "recentDocs": "Recent documents",
+    "noDocs": "No documents yet",
+    "noDocsHint": "Upload your first file to start building the index.",
+    "uploadFirst": "Upload a document",
+    "systemHealth": "System health",
+    "apiStatus": "API",
+    "apiHealthy": "healthy",
+    "apiDown": "unreachable",
+    "apiDownHint": "Start the backend with uvicorn and refresh this page.",
+    "cpu": "CPU",
+    "memory": "Memory",
+    "uptime": "Uptime",
+    "traceId": "Trace id",
+    "quickActions": "Quick actions",
+    "qaChat": "Ask the assistant",
+    "qaSearch": "Hybrid search",
+    "qaSystem": "System status",
+    "hoursShort": "h",
+    "minutesShort": "m"
+  },
+  "documents": {
+    "title": "Documents",
+    "subtitle": "Upload files and watch them move through the ingestion pipeline.",
+    "upload": "Upload",
+    "dragDrop": "Drop files here or click to browse",
+    "acceptedTypes": "PDF, DOCX, TXT, MD — up to 50 MB",
+    "uploading": "Uploading…",
+    "uploadFailed": "Upload failed",
+    "filename": "Filename",
+    "type": "Type",
+    "status": "Status",
+    "created": "Added",
+    "actions": "Actions",
+    "noDocuments": "Nothing here yet",
+    "noDocumentsHint": "Upload a document above — extraction, chunking and embedding start automatically.",
+    "localNote": "The backend does not expose a document list yet, so this library reflects uploads made from this browser. Syncing arrives with the list endpoint.",
+    "statusQueued": "Queued",
+    "statusProcessing": "Processing",
+    "statusReady": "Ready",
+    "statusFailed": "Failed",
+    "error": "Error",
+    "chunks": "Chunks",
+    "tokens": "tokens",
+    "metadata": "Metadata",
+    "documentId": "Document ID",
+    "ownerId": "Owner ID",
+    "mimeType": "MIME type",
+    "pipeline": "Ingestion pipeline",
+    "pipelineQueued": "Queued",
+    "pipelineProcessing": "Extract · chunk · embed",
+    "pipelineReady": "Indexed — ready for retrieval",
+    "chatWithDoc": "Ask about this document",
+    "openInChat": "Open in chat",
+    "notFound": "Document not found on the server",
+    "backToList": "All documents"
+  },
+  "chat": {
+    "title": "RAG Chat",
+    "placeholder": "Ask anything… (Enter to send, Shift+Enter for a new line)",
+    "send": "Send",
+    "stop": "Stop",
+    "clear": "Clear",
+    "streaming": "streaming",
+    "thinking": "Thinking…",
+    "startConversation": "Start a conversation",
+    "askQuestions": "Answers stream token-by-token, and every response carries a trace id you can follow in Observability.",
+    "suggestions": {
+      "s1": "Summarize the ingestion pipeline",
+      "s2": "What does the policy gate block?",
+      "s3": "Explain hybrid retrieval in one paragraph"
+    },
+    "traceBadge": "Trace",
+    "backendError": "The assistant could not be reached. Check that the API is running.",
+    "emptyReply": "The model returned an empty response.",
+    "composerHint": "Enter send · Shift+Enter new line"
+  },
+  "coming": {
+    "kicker": "On the roadmap",
+    "title": "This page is being built",
+    "subtitleSearch": "Dense + sparse hybrid retrieval with RRF fusion and cross-encoder reranking will live here.",
+    "subtitleApprovals": "Human-in-the-loop approvals for agent proposals — pause the graph, decide, and the run resumes with a full audit trail.",
+    "subtitleAudit": "Every policy decision, allow or deny, will be listed here with actor, action and reason.",
+    "subtitleTraces": "Langfuse-backed traces: every prompt, tool call and token count for each answer you receive.",
+    "subtitleEvals": "Golden-dataset evaluations — faithfulness and context-recall scores with CI quality gates.",
+    "subtitleSettings": "Provider configuration: LLM endpoint, embedding model, Qdrant collection and reranker.",
+    "subtitleAdmin": "User management with roles and access scopes.",
+    "subtitleSystem": "Compose service status: API, queue, vector store, model server.",
+    "phaseLabel": "Planned phase",
+    "notifyMe": "Meanwhile, the ingestion pipeline and RAG chat are fully functional.",
+    "backToDashboard": "Back to dashboard"
+  },
+  "system": {
+    "title": "System status",
+    "healthy": "Healthy",
+    "unreachable": "Unreachable",
+    "apiServer": "API server",
+    "postgres": "PostgreSQL",
+    "qdrant": "Qdrant",
+    "redis": "Redis",
+    "llmServer": "LLM server",
+    "langfuse": "Langfuse",
+    "cpuUsage": "CPU usage",
+    "memoryUsage": "Memory",
+    "uptime": "Uptime"
+  }
+}

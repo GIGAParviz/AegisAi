@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.hermes
+
+.venv/
+venv/
+
+.my_tests/
+my_tests/
+
+.env
+.env.*
+
+uploads/
+
+.pytest_cache/
+
+
+.vscode/
+.idea/
+
+.DS_Store
+Thumbs.db
+# local sqlite db files
+*.db
