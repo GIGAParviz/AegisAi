@@ -88,5 +88,7 @@ class Settings(BaseSettings):
 
     max_context_tokens: int = 2048
 
-
+    verifier_max_retries: int = 2
+    
+    
 settings = Settings()
