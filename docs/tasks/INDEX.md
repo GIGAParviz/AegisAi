@@ -38,14 +38,14 @@
 ## فاز 4 — Harness
 
 - [x] `T4.1-context-builder.md` — Context Builder
-- [ ] `T4.2-action-registry.md` — رجیستری اکشن ها (Pydantic)
-- [ ] `T4.3-policy-gate.md` — Policy Gate (deny-by-default + audit)
-- [ ] `T4.4-verifier.md` — لایه Verify (schema + قواعد + retry)
-- [ ] `T4.5-llm-judge.md` — LLM-as-a-Judge (اختیاری)
+- [x] `T4.2-action-registry.md` — رجیستری اکشن ها (Pydantic)
+- [x] `T4.3-policy-gate.md` — Policy Gate (deny-by-default + audit)
+- [x] `T4.4-verifier.md` — لایه Verify (schema + قواعد + retry)
+- [~] `T4.5-llm-judge.md` — LLM-as-a-Judge (اختیاری — رد شد برای جلوگیری از تأخیر و هزینه توکن آنلاین)
 
 ## فاز 5 — Agentic Runtime
 
-- [ ] `T5.1-langgraph-loop.md` — حلقه ایجنت با LangGraph
+- [x] `T5.1-langgraph-loop.md` — حلقه ایجنت با LangGraph
 - [ ] `T5.2-mcp-integration.md` — کلاینت MCP + اولین tool server
 - [ ] `T5.3-human-in-loop.md` — Human-in-the-loop approvals
 - [ ] `T5.4-multi-agent.md` — نمونه چند ایجنتی (planner/worker)
