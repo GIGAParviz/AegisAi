@@ -23,4 +23,3 @@ async def admin_whoami(
         "email": current_user.email,
         "role": current_user.role,
     }
-

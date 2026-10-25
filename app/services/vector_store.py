@@ -305,9 +305,9 @@ def build_vector_store(
     dense_provider: EmbeddingProvider,
 ) -> QdrantVectorStore:
     client = QdrantClient(url=settings.qdrant_url)
-    
+
     reranker = build_reranker()
-    
+
     sparse_provider = SparseBM25Provider(model_name=settings.sparse_embedding_model)
 
     return QdrantVectorStore(

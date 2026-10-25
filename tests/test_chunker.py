@@ -6,6 +6,7 @@ from app.services.extractors import extract
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
+
 def test_short_text_creates_one_chunk():
     chunker = TextChunker(
         max_tokens=50,
@@ -56,13 +57,11 @@ def test_headings_create_boundaries():
 
     assert len(chunks) == 2
 
-    assert chunks[0].content.startswith(
-        "# Authentication"
-    )
+    assert chunks[0].content.startswith("# Authentication")
 
-    assert chunks[1].content.startswith(
-        "# Database"
-    )
+    assert chunks[1].content.startswith("# Database")
+
+
 def test_extract_markdown():
     path = FIXTURES_DIR / "sample.md"
 
@@ -79,4 +78,3 @@ def test_extract_pdf():
 
     assert "# AegisAI" in text
     assert "Celery workers" in text
-

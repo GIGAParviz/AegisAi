@@ -29,11 +29,9 @@ async def test_ingest_document_changes_status(
     )
 
     monkeypatch.setattr(
-        worker_tasks,
-        "build_vector_store",
-        lambda *_: FakeVectorStore()
+        worker_tasks, "build_vector_store", lambda *_: FakeVectorStore()
     )
-    
+
     celery_app.conf.update(
         task_always_eager=True,
         task_eager_propagates=True,
@@ -73,10 +71,7 @@ async def test_ingest_document_changes_status(
         upload_dir,
     )
 
-    file_path = (
-        upload_dir
-        / f"{document.id}_{document.filename}"
-    )
+    file_path = upload_dir / f"{document.id}_{document.filename}"
 
     file_path.write_text(
         """
@@ -104,21 +99,15 @@ async def test_ingest_document_changes_status(
 
     async with session_factory() as session:
         db_result = await session.execute(
-            select(Document).where(
-                Document.id == document_id
-            )
+            select(Document).where(Document.id == document_id)
         )
 
         updated_document = db_result.scalar_one()
 
         chunk_result = await session.execute(
             select(DocumentChunk)
-            .where(
-                DocumentChunk.document_id == document_id
-            )
-            .order_by(
-                DocumentChunk.chunk_index
-            )
+            .where(DocumentChunk.document_id == document_id)
+            .order_by(DocumentChunk.chunk_index)
         )
 
         chunks = chunk_result.scalars().all()

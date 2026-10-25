@@ -11,12 +11,12 @@ from app.core.config import settings
 
 Vector = list[float]
 
+
 class EmbeddingProvider(Protocol):
     async def embed(
         self,
         texts: Sequence[str],
-    ) -> list[Vector]:
-        ...
+    ) -> list[Vector]: ...
 
 
 def _batched(
@@ -24,18 +24,14 @@ def _batched(
     batch_size: int,
 ) -> Iterator[list[str]]:
     if batch_size <= 0:
-        raise ValueError(
-            "batch_size must be greater than zero"
-        )
+        raise ValueError("batch_size must be greater than zero")
 
     for start in range(
         0,
         len(texts),
         batch_size,
     ):
-        yield list(
-            texts[start : start + batch_size]
-        )
+        yield list(texts[start : start + batch_size])
 
 
 class FakeEmbeddingProvider:
@@ -44,9 +40,7 @@ class FakeEmbeddingProvider:
         dimensions: int = 384,
     ):
         if dimensions <= 0:
-            raise ValueError(
-                "dimensions must be greater than zero"
-            )
+            raise ValueError("dimensions must be greater than zero")
 
         self.dimensions = dimensions
 
@@ -54,10 +48,7 @@ class FakeEmbeddingProvider:
         self,
         texts: Sequence[str],
     ) -> list[Vector]:
-        return [
-            self._vector_for(text)
-            for text in texts
-        ]
+        return [self._vector_for(text) for text in texts]
 
     def _vector_for(
         self,
@@ -68,18 +59,13 @@ class FakeEmbeddingProvider:
         counter = 0
 
         while len(values) < self.dimensions:
-            digest = hashlib.sha256(
-                f"{counter}:{text}".encode()
-            ).digest()
+            digest = hashlib.sha256(f"{counter}:{text}".encode()).digest()
 
-            values.extend(
-                (byte / 127.5) - 1.0
-                for byte in digest
-            )
+            values.extend((byte / 127.5) - 1.0 for byte in digest)
 
             counter += 1
 
-        return values[:self.dimensions]
+        return values[: self.dimensions]
 
 
 class LocalSTProvider:
@@ -120,9 +106,7 @@ class LocalSTProvider:
                     "Install the local-embeddings extra."
                 ) from exc
 
-            self._model = SentenceTransformer(
-                self.model_name
-            )
+            self._model = SentenceTransformer(self.model_name)
 
         vectors = self._model.encode(
             texts,
@@ -159,9 +143,7 @@ class OpenAICompatProvider:
         vectors: list[Vector] = []
 
         headers = {
-            "Authorization": (
-                f"Bearer {self.api_key}"
-            ),
+            "Authorization": (f"Bearer {self.api_key}"),
             "Content-Type": "application/json",
         }
 
@@ -192,8 +174,7 @@ class OpenAICompatProvider:
 
                 if len(data) != len(batch):
                     raise ValueError(
-                        "Embedding provider returned "
-                        "an unexpected number of vectors"
+                        "Embedding provider returned an unexpected number of vectors"
                     )
 
                 vectors.extend(
@@ -231,6 +212,4 @@ def build_embedding_provider() -> EmbeddingProvider:
     if provider == "fake":
         return FakeEmbeddingProvider()
 
-    raise ValueError(
-        f"Unsupported embedding provider: {provider}"
-    )
+    raise ValueError(f"Unsupported embedding provider: {provider}")

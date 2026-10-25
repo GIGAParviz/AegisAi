@@ -9,6 +9,7 @@ from app.policies.actions import (
     SearchDocsArguments,
     SearchDocsProposal,
 )
+from app.policies.gate import GateDecision, PolicyGate
 
 __all__ = [
     "DEFAULT_ACTION_REGISTRY",
@@ -16,8 +17,10 @@ __all__ = [
     "ActionParseError",
     "ActionProposal",
     "ActionRegistry",
+    "GateDecision",
     "GetDocumentArguments",
     "GetDocumentProposal",
+    "PolicyGate",
     "SearchDocsArguments",
     "SearchDocsProposal",
 ]

@@ -32,8 +32,8 @@ async def test_regular_user_cannot_access_admin(client):
     )
 
     assert response.status_code == 403
-    
-    
+
+
 @pytest.mark.asyncio
 async def test_admin_endpoint_without_token_returns_401(client):
     response = await client.get(
@@ -41,7 +41,7 @@ async def test_admin_endpoint_without_token_returns_401(client):
     )
 
     assert response.status_code == 401
-    
+
 
 @pytest.mark.asyncio
 async def test_admin_can_access_admin_endpoint(

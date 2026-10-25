@@ -231,44 +231,42 @@ async def build(
     session_factory: async_sessionmaker[AsyncSession] | None = None,
 ) -> ContextPayload:
     owns_redis = redis_client is None
-    
+
     if redis_client is None:
         redis_client = Redis.from_url(
             settings.redis_url,
             decode_responses=True,
         )
-        
+
     try:
         store = vector_store
-        
+
         if store is None:
-            store = build_vector_store(
-                build_embedding_provider()
-            )
-            
+            store = build_vector_store(build_embedding_provider())
+
         factory = session_factory or async_session_factory
-        
+
         history = await _load_history(
             redis_client,
             session_id,
         )
-        
+
         search_results = await store.hybrid_search(
             query,
             k=settings.context_sources_limit,
         )
-        
+
         facts = await _load_facts(
             factory,
             user,
         )
-        
+
         _trim_to_budget(
             history,
             search_results,
             facts,
         )
-        
+
         token_count = _count_tokens(
             history,
             search_results,

@@ -37,8 +37,8 @@ async def rate_limit_client():
         yield client
 
     await fake_redis.aclose()
-    
-    
+
+
 @pytest.mark.asyncio
 async def test_rate_limit_returns_429(
     rate_limit_client,
@@ -53,8 +53,8 @@ async def test_rate_limit_returns_429(
     assert third.status_code == 429
 
     assert "Retry-After" in third.headers
-    
-    
+
+
 @pytest.mark.asyncio
 async def test_memory_fallback_rate_limit():
     test_app = FastAPI()

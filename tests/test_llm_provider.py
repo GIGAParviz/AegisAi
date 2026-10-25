@@ -13,14 +13,9 @@ async def test_complete_returns_content():
     def handler(
         request: httpx.Request,
     ) -> httpx.Response:
-        assert (
-            request.url.path
-            == "/v1/chat/completions"
-        )
+        assert request.url.path == "/v1/chat/completions"
 
-        payload = json.loads(
-            request.content
-        )
+        payload = json.loads(request.content)
 
         assert payload["model"] == "test-model"
         assert payload["stream"] is False
@@ -39,9 +34,7 @@ async def test_complete_returns_content():
             },
         )
 
-    transport = httpx.MockTransport(
-        handler
-    )
+    transport = httpx.MockTransport(handler)
 
     provider = OpenAICompatProvider(
         base_url="https://test.local/v1",
@@ -61,17 +54,14 @@ async def test_complete_returns_content():
     )
 
     assert result == "Hello"
-    
-    
-    
+
+
 @pytest.mark.asyncio
 async def test_stream_collects_chunks():
     def handler(
         request: httpx.Request,
     ) -> httpx.Response:
-        payload = json.loads(
-            request.content
-        )
+        payload = json.loads(request.content)
 
         assert payload["stream"] is True
 
@@ -80,21 +70,18 @@ async def test_stream_collects_chunks():
             'data: {"choices":[{"delta":{"content":"Hel"}}]}\n\n'
             'data: {"choices":[{"delta":{"content":"lo"}}]}\n\n'
             'data: {"choices":[]}\n\n'
-            'data: [DONE]\n\n'
+            "data: [DONE]\n\n"
         )
 
         return httpx.Response(
             200,
             headers={
-                "Content-Type":
-                    "text/event-stream",
+                "Content-Type": "text/event-stream",
             },
             content=body.encode(),
         )
 
-    transport = httpx.MockTransport(
-        handler
-    )
+    transport = httpx.MockTransport(handler)
 
     provider = OpenAICompatProvider(
         base_url="https://test.local/v1",

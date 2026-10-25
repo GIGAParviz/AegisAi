@@ -54,9 +54,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
 
         response.headers["X-RateLimit-Limit"] = str(self.limit)
-        response.headers["X-RateLimit-Remaining"] = str(
-            max(self.limit - count, 0)
-        )
+        response.headers["X-RateLimit-Remaining"] = str(max(self.limit - count, 0))
 
         return response
 

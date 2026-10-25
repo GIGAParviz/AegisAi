@@ -100,11 +100,10 @@ async def upload_document(
 
     await session.refresh(document)
 
-    ingest_document.delay(
-        str(document.id)
-    )
+    ingest_document.delay(str(document.id))
 
     return document
+
 
 @router.get(
     "/{document_id}",

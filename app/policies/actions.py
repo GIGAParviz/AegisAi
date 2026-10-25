@@ -38,6 +38,7 @@ class SearchDocsArguments(StrictModel):
         le=20,
     )
 
+
 class GetDocumentArguments(StrictModel):
     document_id: str = Field(
         min_length=1,
@@ -47,20 +48,22 @@ class GetDocumentArguments(StrictModel):
 
 class SearchDocsProposal(StrictModel):
     name: Literal["search_docs"]
-    arguments: SearchDocsArguments  
+    arguments: SearchDocsArguments
+
 
 class GetDocumentProposal(StrictModel):
-    name: Literal["get_document"]    
+    name: Literal["get_document"]
     arguments: GetDocumentArguments
-    
+
+
 ActionProposal = Annotated[
-    SearchDocsProposal | GetDocumentProposal,
-    Field(discriminator="name")
+    SearchDocsProposal | GetDocumentProposal, Field(discriminator="name")
 ]
 
 ActionProposalAdapter = TypeAdapter(ActionProposal)
 
 Constraint = Callable[[BaseModel], bool]
+
 
 @dataclass(frozen=True)
 class ActionDefinition:
@@ -68,25 +71,24 @@ class ActionDefinition:
     proposal_model: type[BaseModel]
     min_role: UserRole
     constraints: tuple[Constraint, ...] = ()
-    
+
+
 class ActionRegistry:
     def __init__(
         self,
         definitions: list[ActionDefinition] | None = None,
     ):
         self._actions: dict[str, ActionDefinition] = {}
-        
+
         for definition in definitions or []:
             self.register(definition)
-            
+
     def register(
         self,
         definition: ActionDefinition,
     ) -> None:
         if definition.name in self._actions:
-            raise ValueError(
-                f"Action already registered: {definition.name}"
-            )
+            raise ValueError(f"Action already registered: {definition.name}")
 
         self._actions[definition.name] = definition
 
@@ -94,51 +96,41 @@ class ActionRegistry:
         self,
         name: str,
     ) -> ActionDefinition:
-        
+
         try:
             return self._actions[name]
-        
+
         except KeyError as exc:
-            raise ActionParseError(
-                f"Unknown action: {name}"
-            ) from exc
-            
+            raise ActionParseError(f"Unknown action: {name}") from exc
+
     def parse_proposal(
         self,
         raw_json: str | bytes,
     ) -> ActionProposal:
         try:
             payload = json.loads(raw_json)
-            
+
         except (
             json.JSONDecodeError,
             UnicodeDecodeError,
             TypeError,
         ) as exc:
-            raise ActionParseError(
-                "Invalid action JSON"
-            ) from exc
-            
+            raise ActionParseError("Invalid action JSON") from exc
+
         if not isinstance(payload, dict):
-            raise ActionParseError(
-                "Action proposal must be a JSON object"
-            )
-            
+            raise ActionParseError("Action proposal must be a JSON object")
+
         name = payload.get("name")
-        
+
         if not isinstance(name, str):
-            raise ActionParseError(
-                    "Action proposal requires a string name"
-                )
-            
+            raise ActionParseError("Action proposal requires a string name")
+
         definition = self.get(name)
-        
+
         try:
             proposal = definition.proposal_model.model_validate(payload)
         except ValidationError as exc:
-            raise ActionParseError(
-                f"Invalid parameters for action: {name}"
-            ) from exc
+            raise ActionParseError(f"Invalid parameters for action: {name}") from exc
 
         return cast(ActionProposal, proposal)
 

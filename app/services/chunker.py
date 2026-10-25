@@ -169,19 +169,14 @@ class TextChunker:
 
             if not token_slice:
                 break
-            
-            content = self.encoding.decode(
-                token_slice
-            ).strip()
-            
+
+            content = self.encoding.decode(token_slice).strip()
+
             chunks.append(
                 Chunk(
                     content=content,
-                    token_count=len(
-                        token_slice
-                    ),
+                    token_count=len(token_slice),
                 )
             )
 
         return chunks
-    

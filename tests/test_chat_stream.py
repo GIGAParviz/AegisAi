@@ -32,9 +32,7 @@ async def test_chat_stream_returns_sse(client, monkeypatch):
     )
 
     assert response.status_code == 200
-    assert response.headers["content-type"].startswith(
-        "text/event-stream"
-    )
+    assert response.headers["content-type"].startswith("text/event-stream")
     assert response.headers["cache-control"] == "no-cache"
 
     blocks = response.text.strip().split("\n\n")
@@ -49,8 +47,5 @@ async def test_chat_stream_returns_sse(client, monkeypatch):
 
     assert "".join(token_data) == "Hello"
 
-    done_block = next(
-        block for block in blocks
-        if block.startswith("event: done")
-    )
+    done_block = next(block for block in blocks if block.startswith("event: done"))
     assert "trace_id" in done_block

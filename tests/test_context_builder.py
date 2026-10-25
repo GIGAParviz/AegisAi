@@ -63,9 +63,7 @@ class FakeSessionFactory:
 async def test_build_orders_context_sections(
     monkeypatch,
 ):
-    redis = FakeRedis(
-        decode_responses=True
-    )
+    redis = FakeRedis(decode_responses=True)
 
     await redis.rpush(
         "chat:history:session-1",
@@ -103,18 +101,12 @@ async def test_build_orders_context_sections(
         session_factory=FakeSessionFactory(),
     )
 
-    assert [
-        message["content"]
-        for message in payload.history
-    ] == [
+    assert [message["content"] for message in payload.history] == [
         "old",
         "new",
     ]
 
-    assert [
-        source.citation
-        for source in payload.sources
-    ] == [
+    assert [source.citation for source in payload.sources] == [
         "[1]",
         "[2]",
     ]
@@ -129,9 +121,7 @@ async def test_build_orders_context_sections(
 async def test_build_trims_old_history_and_low_rank_source(
     monkeypatch,
 ):
-    redis = FakeRedis(
-        decode_responses=True
-    )
+    redis = FakeRedis(decode_responses=True)
 
     await redis.rpush(
         "chat:history:session-2",
@@ -176,10 +166,7 @@ async def test_build_trims_old_history_and_low_rank_source(
         }
     ]
 
-    assert [
-        source.citation
-        for source in payload.sources
-    ] == ["[1]"]
+    assert [source.citation for source in payload.sources] == ["[1]"]
 
     assert payload.token_count <= settings.max_context_tokens
 

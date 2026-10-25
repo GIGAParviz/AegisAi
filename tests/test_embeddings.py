@@ -28,10 +28,7 @@ async def test_fake_embedding_dimensions():
 
     assert len(vectors) == 2
 
-    assert all(
-        len(vector) == 8
-        for vector in vectors
-    )
+    assert all(len(vector) == 8 for vector in vectors)
 
 
 @pytest.mark.asyncio
@@ -40,13 +37,9 @@ async def test_fake_embedding_is_deterministic():
         dimensions=8,
     )
 
-    first = await provider.embed(
-        ["AegisAI"]
-    )
+    first = await provider.embed(["AegisAI"])
 
-    second = await provider.embed(
-        ["AegisAI"]
-    )
+    second = await provider.embed(["AegisAI"])
 
     assert first == second
 

@@ -25,12 +25,9 @@ async def test_fake_reranker_orders_by_score():
         top_k=2,
     )
 
-    assert [
-        item.index
-        for item in results
-    ] == [2, 0]
-    
-    
+    assert [item.index for item in results] == [2, 0]
+
+
 @pytest.mark.asyncio
 async def test_fake_reranker_respects_top_k():
     reranker = FakeReranker(

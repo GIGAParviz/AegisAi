@@ -67,9 +67,7 @@ def _extract_docx(path: Path) -> str:
                 f"{'#' * level} {text}",
             )
 
-        else:   
+        else:
             parts.append(text)
-            
+
     return "\n\n".join(parts)
-
-

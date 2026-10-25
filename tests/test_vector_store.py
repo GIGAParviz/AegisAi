@@ -9,6 +9,7 @@ from app.services.vector_store import (
 
 RUN_QDRANT = os.getenv("RUN_QDRANT_INTEGRATION") == "1"
 
+
 @pytest.mark.asyncio
 async def test_fake_vector_store_upsert():
     store = FakeVectorStore()

@@ -33,9 +33,7 @@ def test_parse_search_docs_proposal():
     assert proposal.arguments.query == "JWT authentication"
     assert proposal.arguments.limit == 5
 
-    definition = DEFAULT_ACTION_REGISTRY.get(
-        "search_docs"
-    )
+    definition = DEFAULT_ACTION_REGISTRY.get("search_docs")
 
     assert definition.min_role == UserRole.USER
 
@@ -65,9 +63,7 @@ def test_rejects_invalid_json():
         ActionParseError,
         match="Invalid action JSON",
     ):
-        DEFAULT_ACTION_REGISTRY.parse_proposal(
-            "{broken-json"
-        )
+        DEFAULT_ACTION_REGISTRY.parse_proposal("{broken-json")
 
 
 def test_rejects_unknown_action():

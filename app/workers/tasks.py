@@ -25,6 +25,7 @@ UPLOAD_DIR = Path("uploads")
 def ingest_document(document_id: str):
     return asyncio.run(_process_document(document_id))
 
+
 def _extract_heading(
     text: str,
 ) -> str | None:
@@ -40,6 +41,7 @@ def _extract_heading(
         return None
 
     return None
+
 
 async def _process_document(document_id: str):
     document = None
@@ -95,7 +97,7 @@ async def _process_document(document_id: str):
                         token_count=chunk.token_count,
                     )
                 )
-                
+
                 vector_chunks.append(
                     VectorChunk(
                         document_id=str(document.id),
@@ -106,16 +108,12 @@ async def _process_document(document_id: str):
                     )
                 )
 
-            vector_store = build_vector_store(
-                embedding_provider
-            )
+            vector_store = build_vector_store(embedding_provider)
 
             await vector_store.ensure_collection()
 
-            await vector_store.upsert_chunks(
-                vector_chunks
-            )
-            
+            await vector_store.upsert_chunks(vector_chunks)
+
             document.status = DocumentStatus.READY
             await session.commit()
 

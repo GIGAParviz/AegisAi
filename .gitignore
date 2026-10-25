@@ -25,3 +25,6 @@ uploads/
 Thumbs.db
 # local sqlite db files
 *.db
+test_lang.py
+data_docs/
+dump.rdb

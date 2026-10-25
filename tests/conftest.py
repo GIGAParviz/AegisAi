@@ -25,8 +25,8 @@ async def session_factory():
     yield factory
 
     await engine.dispose()
-    
-    
+
+
 @pytest_asyncio.fixture
 async def client(session_factory):
     async def override_get_session():
@@ -44,7 +44,8 @@ async def client(session_factory):
         yield test_client
 
     app.dependency_overrides.clear()
-    
+
+
 @pytest_asyncio.fixture
 async def db_session(session_factory):
     async with session_factory() as session:
