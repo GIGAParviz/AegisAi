@@ -1,10 +1,11 @@
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from redis.asyncio import Redis
 
+from app.agents.runtime import postgres_agent_graph
 from app.api.admin import router as admin_router
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
@@ -16,17 +17,24 @@ from app.core.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    app.state.redis = Redis.from_url(
-        settings.redis_url,
-        decode_responses=True,
-    )
+    async with AsyncExitStack() as stack:
+        app.state.redis = Redis.from_url(
+            settings.redis_url,
+            decode_responses=True,
+        )
 
-    try:
-        yield
-    finally:
-        await app.state.redis.aclose()
+        if settings.environment.lower() in {"production", "prod"}:
+            app.state.agent_graph = await stack.enter_async_context(
+                postgres_agent_graph()
+            )
+        else:
+            app.state.agent_graph = None
 
-
+        try:
+            yield
+        finally:
+            await app.state.redis.aclose()
+            
 app = FastAPI(
     title=settings.app_name,
     debug=settings.debug,

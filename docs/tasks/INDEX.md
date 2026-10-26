@@ -45,8 +45,8 @@
 
 ## فاز 5 — Agentic Runtime
 
-- [x] `T5.1-langgraph-loop.md` — حلقه ایجنت با LangGraph
-- [ ] `T5.2-mcp-integration.md` — کلاینت MCP + اولین tool server
+- [~] `T5.1-langgraph-loop.md` — حلقه ایجنت با LangGraph
+- [~] `T5.2-mcp-integration.md` — کلاینت MCP + اولین tool server
 - [ ] `T5.3-human-in-loop.md` — Human-in-the-loop approvals
 - [ ] `T5.4-multi-agent.md` — نمونه چند ایجنتی (planner/worker)
 

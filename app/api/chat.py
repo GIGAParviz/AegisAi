@@ -2,11 +2,12 @@ import json
 import uuid
 from typing import Literal
 
+import httpx
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from app.services.llm import build_llm_provider
+from app.services.llm import LLMProviderError, build_llm_provider
 
 router = APIRouter(
     prefix="/chat",
@@ -42,7 +43,13 @@ async def chat_stream(request: ChatRequest):
 
             yield sse("done", {"trace_id": trace_id})
 
-        except (ConnectionError, TimeoutError, ValueError):
+        except (
+            ConnectionError,
+            TimeoutError,
+            ValueError,
+            LLMProviderError,
+            httpx.HTTPError,
+        ):
             yield sse(
                 "error",
                 {

@@ -14,6 +14,7 @@ class FakeVectorStore:
         self,
         query: str,
         k: int = 5,
+        owner_id: str | None = None,
     ) -> list[SearchResult]:
         results = [
             SearchResult(

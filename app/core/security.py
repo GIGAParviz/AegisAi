@@ -19,6 +19,7 @@ def create_token(
     subject: str,
     token_type: str,
     exipred_delta: timedelta,
+    extra_claims: dict[str, Any] | None = None,
 ) -> str:
     now = datetime.now(UTC)
 
@@ -28,6 +29,8 @@ def create_token(
         "iat": now,
         "exp": now + exipred_delta,
     }
+    if extra_claims:
+        payload.update(extra_claims)
 
     return jwt.encode(
         payload,
@@ -44,13 +47,14 @@ def create_access_token(subject: str) -> str:
     )
 
 
-def create_refresh_token(subject: str) -> str:
+def create_refresh_token(subject: str, token_version: int = 0) -> str:
     return create_token(
         subject,
         "refresh",
         exipred_delta=timedelta(
             settings.refresh_token_expire_days,
         ),
+        extra_claims={"ver": token_version},
     )
 
 

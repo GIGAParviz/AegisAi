@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 
-import tiktoken
+from app.services.tokenizer import Encoding, get_encoding
 
 
 @dataclass(frozen=True)
@@ -23,7 +23,7 @@ class TextChunker:
         self.max_tokens = max_tokens
         self.overlap_tokens = overlap_tokens
 
-        self.encoding = tiktoken.get_encoding("o200k_base")
+        self.encoding: Encoding = get_encoding("o200k_base")
 
     def count_tokens(
         self,

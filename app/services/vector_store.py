@@ -4,10 +4,7 @@ import asyncio
 import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
-from typing import Protocol
-
-from fastembed import SparseTextEmbedding
-from qdrant_client import QdrantClient, models
+from typing import TYPE_CHECKING, Protocol
 
 from app.core.config import settings
 from app.services.embeddings import EmbeddingProvider, Vector
@@ -15,6 +12,9 @@ from app.services.reranker import (
     Reranker,
     build_reranker,
 )
+
+if TYPE_CHECKING:
+    from qdrant_client import QdrantClient, models
 
 
 @dataclass(frozen=True)
@@ -24,6 +24,7 @@ class VectorChunk:
     text: str
     dense_vector: Vector
     heading: str | None = None
+    owner_id: str | None = None
 
 
 @dataclass(frozen=True)
@@ -49,6 +50,7 @@ class VectorStore(Protocol):
         self,
         query: str,
         k: int = 5,
+        owner_id: str | None = None,
     ) -> list[SearchResult]: ...
 
 
@@ -73,6 +75,9 @@ class SparseBM25Provider:
         self,
         texts: list[str],
     ) -> list[models.SparseVector]:
+        from fastembed import SparseTextEmbedding
+        from qdrant_client import models
+
         if self._model is None:
             self._model = SparseTextEmbedding(
                 model_name=self.model_name,
@@ -114,6 +119,8 @@ class QdrantVectorStore:
     async def ensure_collection(
         self,
     ) -> None:
+        from qdrant_client import models
+
         exists = await asyncio.to_thread(
             self.client.collection_exists,
             self.collection_name,
@@ -142,6 +149,8 @@ class QdrantVectorStore:
         self,
         chunks: Sequence[VectorChunk],
     ) -> None:
+        from qdrant_client import models
+
         if not chunks:
             return
 
@@ -174,6 +183,7 @@ class QdrantVectorStore:
                         "chunk_index": chunk.chunk_index,
                         "text": chunk.text,
                         "heading": chunk.heading,
+                        "owner_id": chunk.owner_id,
                     },
                 )
             )
@@ -189,7 +199,10 @@ class QdrantVectorStore:
         self,
         query: str,
         k: int,
+        owner_id: str | None = None,
     ) -> list[SearchResult]:
+        from qdrant_client import models
+
         candidate_limit = (
             max(k, self.rerank_candidates) if self.reranker is not None else k
         )
@@ -210,10 +223,9 @@ class QdrantVectorStore:
         dense_query = dense_vectors[0]
         sparse_query = sparse_vectors[0]
 
-        response = await asyncio.to_thread(
-            self.client.query_points,
-            collection_name=self.collection_name,
-            prefetch=[
+        query_kwargs = {
+            "collection_name": self.collection_name,
+            "prefetch": [
                 models.Prefetch(
                     query=dense_query,
                     using="dense",
@@ -225,12 +237,21 @@ class QdrantVectorStore:
                     limit=prefetch_limit,
                 ),
             ],
-            query=models.FusionQuery(
-                fusion=models.Fusion.RRF,
-            ),
-            limit=candidate_limit,
-            with_payload=True,
-        )
+            "query": models.FusionQuery(fusion=models.Fusion.RRF),
+            "limit": candidate_limit,
+            "with_payload": True,
+        }
+        if owner_id is not None:
+            query_kwargs["query_filter"] = models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="owner_id",
+                        match=models.MatchValue(value=owner_id),
+                    )
+                ]
+            )
+
+        response = await asyncio.to_thread(self.client.query_points, **query_kwargs)
 
         results: list[SearchResult] = []
         for point in response.points:
@@ -251,7 +272,7 @@ class QdrantVectorStore:
 
         ranked = await self.reranker.rerank(
             query=query,
-            douments=[result.text for result in results],
+            documents=[result.text for result in results],
             top_k=k,
         )
 
@@ -284,10 +305,16 @@ class FakeVectorStore:
         self,
         query: str,
         k: int = 5,
+        owner_id: str | None = None,
     ) -> list[SearchResult]:
         query_lower = query.lower()
 
-        matching = [chunk for chunk in self.chunks if query_lower in chunk.text.lower()]
+        matching = [
+            chunk
+            for chunk in self.chunks
+            if query_lower in chunk.text.lower()
+            and (owner_id is None or chunk.owner_id == owner_id)
+        ]
 
         return [
             SearchResult(
@@ -304,6 +331,8 @@ class FakeVectorStore:
 def build_vector_store(
     dense_provider: EmbeddingProvider,
 ) -> QdrantVectorStore:
+    from qdrant_client import QdrantClient
+
     client = QdrantClient(url=settings.qdrant_url)
 
     reranker = build_reranker()

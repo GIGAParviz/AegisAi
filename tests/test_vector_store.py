@@ -67,3 +67,31 @@ async def test_fake_vector_store_search():
     assert results[0].heading == "Authentication"
 
     assert results[0].chunk_index == 0
+
+
+@pytest.mark.asyncio
+async def test_fake_vector_store_filters_by_owner():
+    store = FakeVectorStore()
+
+    await store.upsert_chunks(
+        [
+            VectorChunk(
+                document_id="doc-1",
+                chunk_index=0,
+                text="private text",
+                dense_vector=[0.1],
+                owner_id="user-1",
+            ),
+            VectorChunk(
+                document_id="doc-2",
+                chunk_index=0,
+                text="private text",
+                dense_vector=[0.2],
+                owner_id="user-2",
+            ),
+        ]
+    )
+
+    results = await store.hybrid_search("private", owner_id="user-1")
+
+    assert [result.document_id for result in results] == ["doc-1"]

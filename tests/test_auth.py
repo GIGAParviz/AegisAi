@@ -79,6 +79,13 @@ async def test_register_login_refresh(client):
     assert "access_token" in refreshed_tokens
     assert "refresh_token" in refreshed_tokens
 
+    replay_response = await client.post(
+        "/auth/refresh",
+        json={"refresh_token": tokens["refresh_token"]},
+    )
+
+    assert replay_response.status_code == 401
+
 
 @pytest.mark.asyncio
 async def test_register_duplicate_email_returns_409(client):

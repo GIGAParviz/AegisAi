@@ -4,9 +4,9 @@ import json
 from collections.abc import Sequence
 from datetime import date, datetime
 from functools import lru_cache
+from math import ceil
 from uuid import UUID
 
-import tiktoken
 from pydantic import BaseModel, Field
 from redis.asyncio import Redis
 from sqlalchemy import select
@@ -17,6 +17,7 @@ from app.db.engine import async_session_factory
 from app.db.models.document import Document, DocumentStatus
 from app.db.models.user import User
 from app.services.embeddings import build_embedding_provider
+from app.services.tokenizer import Encoding, FallbackEncoding, get_encoding
 from app.services.vector_store import (
     SearchResult,
     VectorStore,
@@ -153,8 +154,8 @@ async def _load_facts(
 
 
 @lru_cache(maxsize=1)
-def _encoding() -> tiktoken.Encoding:
-    return tiktoken.get_encoding("cl100k_base")
+def _encoding() -> Encoding:
+    return get_encoding("cl100k_base")
 
 
 def _count_tokens(
@@ -170,7 +171,11 @@ def _count_tokens(
 
     text = "\n".join(parts)
 
-    return len(_encoding().encode(text))
+    encoding = _encoding()
+    token_count = len(encoding.encode(text))
+    if isinstance(encoding, FallbackEncoding):
+        return ceil(token_count * 2.25)
+    return token_count
 
 
 def _trim_to_budget(
@@ -254,6 +259,7 @@ async def build(
         search_results = await store.hybrid_search(
             query,
             k=settings.context_sources_limit,
+            owner_id=str(user.id),
         )
 
         facts = await _load_facts(

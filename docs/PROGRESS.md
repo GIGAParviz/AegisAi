@@ -280,3 +280,20 @@ _(بازبینی ۲۱:۰۰ کرون بدون گزارش کاربر — شواه�
 2. INDEX.md و status تسک‌ها 20+ روز عقب بود — با همین audit اصلاح شد.
 3. `PROGRESS.md` از 2026-09-05 ساکت بود — لاگ روزانه باز می‌شود.
 4. T3.2: تصمیم نهایی — GGUF محلی یا API ریموت دائمی؟ اگر ریموت، تسک با یادداشت بسته شود.
+
+---
+
+## 2026-10-26 — Review و اصلاحات اجرایی
+
+### شواهد زنده
+- `pytest -q` → **56 passed, 1 skipped** بعد از اصلاحات.
+- `python -m compileall app tests migrations` → موفق.
+- import اپ روی Windows بدون بارگذاری native Qdrant/ONNX در startup انجام می‌شود.
+
+### اصلاحات
+- importهای `qdrant-client`/`fastembed` تنبل شدند؛ encoding توکن fallback آفلاین دارد.
+- فیلتر مالک سند تا vector store، context builder و AgentGraph اضافه شد.
+- خروجی actionها با schema واقعی verify می‌شود و retry feedback دارد.
+- refresh token versioning و replay protection اضافه شد.
+- typo reranker و scratchpad ریشه‌ای `tests/ttt.py` حذف شد؛ `test_lang.py` با `testpaths` از collection تست کنار گذاشته شد.
+- وضعیت T4.2 تا T4.4، T5.1 و T5.2 با کد همگام شد؛ T5.1 و T5.2 هنوز partial هستند.

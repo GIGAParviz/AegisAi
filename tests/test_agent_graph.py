@@ -68,7 +68,12 @@ class FakeVectorStore:
     async def upsert_chunks(self, chunks: Any) -> None:
         pass
 
-    async def hybrid_search(self, query: str, k: int = 5) -> list[SearchResult]:
+    async def hybrid_search(
+        self,
+        query: str,
+        k: int = 5,
+        owner_id: str | None = None,
+    ) -> list[SearchResult]:
         self.last_query = query
         self.last_k = k
         return self.results[:k]
@@ -114,9 +119,9 @@ async def test_agent_graph_executes_permitted_action(agent_session_factory):
         "user": user,
     }
 
-    result = await graph.app.ainvoke(
-        initial_state,
-        config={"configurable": {"thread_id": "thread-1"}},
+    result = await graph.ainvoke(
+    initial_state,
+    thread_id="thread-1",
     )
 
     assert result["status"] == "completed"
@@ -125,8 +130,8 @@ async def test_agent_graph_executes_permitted_action(agent_session_factory):
     assert fake_vector_store.last_query == "authentication"
     assert fake_vector_store.last_k == 3
     assert result["final_response"] == final_answer
-    assert len(result["action_result"]) == 1
-    assert result["action_result"][0]["document_id"] == "doc-1"
+    assert len(result["action_result"]["results"]) == 1
+    assert result["action_result"]["results"][0]["document_id"] == "doc-1"
 
 
 @pytest.mark.asyncio
@@ -168,9 +173,9 @@ async def test_agent_graph_blocks_unauthorized_action(agent_session_factory):
         "user": regular_user,
     }
 
-    result = await graph.app.ainvoke(
+    result = await graph.ainvoke(
         initial_state,
-        config={"configurable": {"thread_id": "thread-2"}},
+        thread_id="thread-2",
     )
 
     assert result["status"] == "completed"
@@ -201,9 +206,9 @@ async def test_agent_graph_handles_conversational_response_without_tools(agent_s
         "user": user,
     }
 
-    result = await graph.app.ainvoke(
+    result = await graph.ainvoke(
         initial_state,
-        config={"configurable": {"thread_id": "thread-3"}},
+        thread_id="thread-3",
     )
 
     assert result["status"] == "completed"
@@ -211,3 +216,47 @@ async def test_agent_graph_handles_conversational_response_without_tools(agent_s
     assert result.get("decision") is None
     assert result.get("action_result") is None
     assert result["final_response"] == conversational_reply
+
+
+@pytest.mark.asyncio
+async def test_agent_graph_exposes_checkpoint_state(agent_session_factory):
+    fake_llm = FakeLLMProvider(
+        ["Hello from the agent"],
+    )
+
+    graph = AgentGraph(
+        llm=fake_llm,
+        vector_store=FakeVectorStore(),
+        session_factory=agent_session_factory,
+    )
+
+    state = {
+        "messages": [
+            {
+                "role": "user",
+                "content": "Hello",
+            }
+        ],
+        "user": {
+            "id": "user-004",
+            "role": UserRole.USER.value,
+        },
+    }
+
+    result = await graph.ainvoke(
+        state,
+        thread_id="persistent-thread",
+    )
+
+    snapshot = await graph.aget_state(
+        thread_id="persistent-thread",
+    )
+
+    history = await graph.aget_state_history(
+        thread_id="persistent-thread",
+    )
+
+    assert result["status"] == "completed"
+    assert snapshot.values["status"] == "completed"
+    assert snapshot.config["configurable"]["thread_id"] == "persistent-thread"
+    assert len(history) > 0

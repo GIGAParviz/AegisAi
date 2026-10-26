@@ -105,6 +105,7 @@ async def _process_document(document_id: str):
                         text=chunk.content,
                         dense_vector=dense_vector,
                         heading=heading,
+                        owner_id=str(document.owner_id),
                     )
                 )
 

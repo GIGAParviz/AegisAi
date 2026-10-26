@@ -45,7 +45,7 @@ def verify(
     if schema is not None:
         if isinstance(parsed_data, schema):
             validated_obj = parsed_data
-        elif isinstance(parsed_data, dict):
+        else:
             try:
                 validated_obj = schema.model_validate(parsed_data)
                 parsed_data = validated_obj
@@ -54,11 +54,6 @@ def verify(
                     field_name = ".".join(str(loc) for loc in err["loc"])
                     errors.append(f"Field '{field_name}': {err['msg']}")
                 return VerifyResult(is_valid=False, errors=errors)
-        else:
-            return VerifyResult(
-                is_valid=False,
-                errors=[f"Expected object matching {schema.__name__}, got {type(parsed_data).__name__}"],
-            )
 
     for rule in rules or []:
         passed, error_msg = rule(parsed_data)

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from jwt import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy import select
@@ -80,6 +82,12 @@ async def login(
             detail="Invalid credentials",
         )
 
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User is inactive",
+        )
+
     if not verify_pass(payload.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -88,7 +96,10 @@ async def login(
 
     return TokenResponse(
         access_token=create_access_token(str(user.id)),
-        refresh_token=create_refresh_token(str(user.id)),
+        refresh_token=create_refresh_token(
+            str(user.id),
+            user.refresh_token_version,
+        ),
     )
 
 
@@ -98,6 +109,7 @@ async def login(
 )
 async def refresh(
     payload: RefreshRequest,
+    session: AsyncSession = Depends(get_session),
 ):
     try:
         decoded = decode_token(payload.refresh_token)
@@ -128,7 +140,34 @@ async def refresh(
             detail="Invalid token subject",
         )
 
+    try:
+        user_id = UUID(str(subject))
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token subject",
+        ) from exc
+
+    result = await session.execute(
+        select(User)
+        .where(User.id == user_id, User.is_active.is_(True))
+        .with_for_update()
+    )
+    user = result.scalar_one_or_none()
+    token_version = decoded.get("ver", 0)
+    if user is None or token_version != user.refresh_token_version:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token revoked",
+        )
+
+    user.refresh_token_version += 1
+    await session.commit()
+
     return TokenResponse(
-        access_token=create_access_token(subject),
-        refresh_token=create_refresh_token(subject),
+        access_token=create_access_token(str(user.id)),
+        refresh_token=create_refresh_token(
+            str(user.id),
+            user.refresh_token_version,
+        ),
     )
