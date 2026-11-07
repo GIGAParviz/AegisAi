@@ -122,7 +122,10 @@ class PolicyGate:
                         reason = f"Constraint evaluation error: {exc}"
                         break
 
-                if not violated:
+                if not violated and definition.requires_approval:
+                    decision = PolicyDecision.PENDING_APPROVAL
+                    reason = "Awaiting human approval"
+                elif not violated:
                     decision = PolicyDecision.ALLOW
                     reason = "Action permitted by policy gate"
 

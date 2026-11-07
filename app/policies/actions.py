@@ -71,6 +71,7 @@ class ActionDefinition:
     proposal_model: type[BaseModel]
     min_role: UserRole
     constraints: tuple[Constraint, ...] = ()
+    requires_approval: bool = False
 
 
 class ActionRegistry:
@@ -91,6 +92,9 @@ class ActionRegistry:
             raise ValueError(f"Action already registered: {definition.name}")
 
         self._actions[definition.name] = definition
+
+    def definitions(self) -> list[ActionDefinition]:
+        return list(self._actions.values())
 
     def get(
         self,

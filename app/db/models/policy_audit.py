@@ -11,6 +11,7 @@ from app.db.base import Base
 class PolicyDecision(str, enum.Enum):
     ALLOW = "allow"
     DENY = "deny"
+    PENDING_APPROVAL = "pending_approval"
 
 
 class PolicyAudit(Base):

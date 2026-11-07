@@ -2,17 +2,22 @@ from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING, Any, TypedDict
-from uuid import UUID
+from uuid import UUID, uuid4
 
+from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
+from langgraph.types import Command, interrupt
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.agents.mcp_client import McpActionCatalog, McpToolError, McpToolProposal
 from app.core.config import settings
 from app.db.engine import async_session_factory
+from app.db.models.approval import Approval, ApprovalStatus
 from app.db.models.document import Document
+from app.db.models.policy_audit import PolicyDecision
 from app.policies.actions import (
     DEFAULT_ACTION_REGISTRY,
     ActionParseError,
@@ -32,8 +37,10 @@ class AgentState(TypedDict, total=False):
     user: Any
     session: AsyncSession | None
     proposal_raw: str | None
-    proposal: ActionProposal | None
+    proposal: ActionProposal | McpToolProposal | None
     decision: GateDecision | None
+    approval_id: str | None
+    approval_decision: dict[str, Any] | None
     action_result: Any | None
     final_response: str | None
     status: str
@@ -138,9 +145,14 @@ class AgentGraph:
         vector_store: VectorStore | Any | None = None,
         session_factory: async_sessionmaker[AsyncSession] | None = None,
         checkpointer: Any | None = None,
+        mcp_catalog: McpActionCatalog | None = None,
     ) -> None:
         self.llm = llm or build_llm_provider()
-        self.registry = registry or DEFAULT_ACTION_REGISTRY
+        definitions = list((registry or DEFAULT_ACTION_REGISTRY).definitions())
+        if mcp_catalog is not None:
+            definitions.extend(mcp_catalog.definitions)
+        self.registry = ActionRegistry(definitions)
+        self.mcp_catalog = mcp_catalog
         self.gate = gate or PolicyGate(self.registry)
         if vector_store is not None:
             self.vector_store = vector_store
@@ -168,6 +180,8 @@ class AgentGraph:
         workflow.add_node("reason", self._reason_node)
         workflow.add_node("propose", self._propose_node)
         workflow.add_node("gate", self._gate_node)
+        workflow.add_node("request_approval", self._request_approval_node)
+        workflow.add_node("await_approval", self._await_approval_node)
         workflow.add_node("execute", self._execute_node)
         workflow.add_node("verify", self._verify_node)
         workflow.add_node("respond", self._respond_node)
@@ -189,11 +203,30 @@ class AgentGraph:
             self._route_after_gate,
             {
                 "execute": "execute",
+                "request_approval": "request_approval",
                 "respond": "respond",
             },
         )
 
-        workflow.add_edge("execute", "verify")
+        workflow.add_edge("request_approval", "await_approval")
+
+        workflow.add_conditional_edges(
+            "await_approval",
+            self._route_after_approval,
+            {
+                "execute": "execute",
+                "respond": "respond",
+            },
+        )
+
+        workflow.add_conditional_edges(
+            "execute",
+            self._route_after_execute,
+            {
+                "verify": "verify",
+                "respond": "respond",
+            },
+        )
 
         workflow.add_conditional_edges(
             "verify",
@@ -233,6 +266,16 @@ class AgentGraph:
         return await self.app.ainvoke(
             state,
             config=self._run_config(thread_id, checkpoint_id),
+        )
+
+    async def aresume(
+        self,
+        thread_id: str,
+        resolution: dict[str, Any],
+    ) -> AgentState:
+        return await self.app.ainvoke(
+            Command(resume=resolution),
+            config=self._run_config(thread_id),
         )
 
     async def aget_state(
@@ -310,40 +353,108 @@ class AgentGraph:
                 decision = await self.gate.check(proposal, user, local_session)
                 await local_session.commit()
 
-        status = "in_progress" if decision.allowed else "denied"
+        if decision.allowed:
+            status = "in_progress"
+        elif decision.decision == PolicyDecision.PENDING_APPROVAL:
+            status = "awaiting_approval"
+        else:
+            status = "denied"
+
         return {
             "decision": decision,
             "status": status,
         }
+
+    async def _request_approval_node(
+        self,
+        state: AgentState,
+        config: RunnableConfig,
+    ) -> dict[str, Any]:
+        proposal = state["proposal"]
+        approval_id = uuid4()
+        thread_id = str(config["configurable"]["thread_id"])
+
+        async with self.session_factory() as session:
+            session.add(
+                Approval(
+                    id=approval_id,
+                    graph_run_id=thread_id,
+                    action=proposal.name,
+                    proposal_json=proposal.model_dump_json(),
+                    status=ApprovalStatus.PENDING,
+                )
+            )
+            await session.commit()
+
+        return {
+            "approval_id": str(approval_id),
+            "status": "awaiting_approval",
+        }
+
+    async def _await_approval_node(self, state: AgentState) -> dict[str, Any]:
+        proposal = state["proposal"]
+        resolution = interrupt(
+            {
+                "approval_id": state["approval_id"],
+                "proposal": proposal.model_dump(mode="json"),
+            }
+        )
+        approved = bool(resolution["approved"])
+
+        return {
+            "approval_decision": {
+                "approved": approved,
+                "decided_by": resolution.get("decided_by"),
+            },
+            "status": "in_progress" if approved else "rejected",
+        }
+
+    async def execute_action(
+        self,
+        proposal: ActionProposal | McpToolProposal,
+        user: Any,
+        session: AsyncSession,
+    ) -> Any:
+        if isinstance(proposal, McpToolProposal):
+            if self.mcp_catalog is None:
+                raise ValueError(
+                    f"No MCP catalog registered for action: {proposal.name}"
+                )
+            return await self.mcp_catalog.execute(proposal)
+
+        action_name = getattr(proposal, "name", "")
+        arguments = getattr(proposal, "arguments", None)
+
+        if action_name == "search_docs":
+            return await _execute_search_docs(arguments, self.vector_store, user)
+        if action_name == "get_document":
+            return await _execute_get_document(arguments, session, user)
+        raise ValueError(f"No execution handler registered for action: {action_name}")
 
     async def _execute_node(self, state: AgentState) -> dict[str, Any]:
         proposal = state.get("proposal")
         if proposal is None:
             return {"action_result": None}
 
-        action_name = getattr(proposal, "name", "")
-        arguments = getattr(proposal, "arguments", None)
         user = state.get("user")
         session = state.get("session")
 
-        if action_name == "search_docs":
-            action_result = await _execute_search_docs(
-                arguments,
-                self.vector_store,
-                user,
-            )
-        elif action_name == "get_document":
+        try:
             if session is not None:
-                action_result = await _execute_get_document(arguments, session, user)
+                action_result = await self.execute_action(proposal, user, session)
             else:
                 async with self.session_factory() as local_session:
-                    action_result = await _execute_get_document(
-                        arguments,
-                        local_session,
+                    action_result = await self.execute_action(
+                        proposal,
                         user,
+                        local_session,
                     )
-        else:
-            raise ValueError(f"No execution handler registered for action: {action_name}")
+        except McpToolError as exc:
+            return {
+                "action_result": None,
+                "status": "error",
+                "verification_errors": [str(exc)],
+            }
 
         return {"action_result": action_result}
 
@@ -372,6 +483,11 @@ class AgentGraph:
             reason = decision.reason if decision else "Security policy denied action"
             return {
                 "final_response": f"Action blocked by AegisAI Policy Gate: {reason}",
+                "status": "completed",
+            }
+        if status == "rejected":
+            return {
+                "final_response": "Action was rejected by a human reviewer.",
                 "status": "completed",
             }
         if status == "error":
@@ -407,7 +523,19 @@ class AgentGraph:
         decision = state.get("decision")
         if decision is not None and decision.allowed:
             return "execute"
+        if (
+            decision is not None
+            and decision.decision == PolicyDecision.PENDING_APPROVAL
+        ):
+            return "request_approval"
         return "respond"
+
+    def _route_after_approval(self, state: AgentState) -> str:
+        approval = state.get("approval_decision") or {}
+        return "execute" if approval.get("approved") else "respond"
+
+    def _route_after_execute(self, state: AgentState) -> str:
+        return "respond" if state.get("status") == "error" else "verify"
 
     def _route_after_verify(self, state: AgentState) -> str:
         if state.get("status") == "repair_needed":
