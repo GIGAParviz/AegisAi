@@ -11,12 +11,74 @@ from typing import Any, Protocol
 import httpx
 
 from app.core.config import settings
+from app.observability.tracing import start_span
 
 Message = Mapping[str, Any]
 
 
 class LLMProviderError(RuntimeError):
     pass
+
+
+def _message_summary(messages: Sequence[Message]) -> dict[str, int]:
+    return {
+        "message_count": len(messages),
+        "input_characters": sum(
+            len(content)
+            for message in messages
+            if isinstance((content := message.get("content")), str)
+        ),
+    }
+
+
+def _usage_details(usage: Any) -> dict[str, int]:
+    if not isinstance(usage, Mapping):
+        return {}
+
+    details: dict[str, int] = {}
+    prompt_tokens = usage.get("prompt_tokens", usage.get("input_tokens"))
+    completion_tokens = usage.get("completion_tokens", usage.get("output_tokens"))
+    prompt_metadata = usage.get("prompt_tokens_details")
+    completion_metadata = usage.get("completion_tokens_details")
+    cached_tokens = (
+        prompt_metadata.get("cached_tokens", 0)
+        if isinstance(prompt_metadata, Mapping)
+        else 0
+    )
+    reasoning_tokens = (
+        completion_metadata.get("reasoning_tokens", 0)
+        if isinstance(completion_metadata, Mapping)
+        else 0
+    )
+
+    if isinstance(prompt_tokens, int):
+        details["input"] = max(prompt_tokens - int(cached_tokens or 0), 0)
+    if isinstance(cached_tokens, int) and cached_tokens > 0:
+        details["input_cached_tokens"] = cached_tokens
+    if isinstance(completion_tokens, int):
+        details["output"] = max(completion_tokens - int(reasoning_tokens or 0), 0)
+    if isinstance(reasoning_tokens, int) and reasoning_tokens > 0:
+        details["output_reasoning_tokens"] = reasoning_tokens
+
+    if details:
+        details["total"] = sum(details.values())
+    return details
+
+
+def _cost_details(usage: Any) -> dict[str, float]:
+    if not isinstance(usage, Mapping):
+        return {}
+    cost = usage.get("cost")
+    if isinstance(cost, (int, float)) and cost >= 0:
+        return {"total": float(cost)}
+    cost_details = usage.get("cost_details")
+    if isinstance(cost_details, Mapping):
+        return {
+            str(key): float(value)
+            for key, value in cost_details.items()
+            if isinstance(value, (int, float)) and value >= 0
+        }
+    return {}
 
 
 class LLMProvider(Protocol):
@@ -93,37 +155,62 @@ class OpenAICompatProvider:
             False,
             kwargs,
         )
+        model_parameters = {
+            key: value
+            for key, value in kwargs.items()
+            if key in {"temperature", "max_tokens", "top_p"}
+            and isinstance(value, (str, int, float, bool))
+        }
 
-        async with httpx.AsyncClient(
-            timeout=self.timeout,
-            transport=self.transport,
-        ) as client:
-            response = await client.post(
-                f"{self.base_url}/chat/completions",
-                headers=self._headers(),
-                json=payload,
-            )
+        with start_span(
+            "llm.complete",
+            as_type="generation",
+            input=_message_summary(messages),
+            model=self.model,
+            model_parameters=model_parameters,
+        ) as observation:
+            async with httpx.AsyncClient(
+                timeout=self.timeout,
+                transport=self.transport,
+            ) as client:
+                response = await client.post(
+                    f"{self.base_url}/chat/completions",
+                    headers=self._headers(),
+                    json=payload,
+                )
 
-        response.raise_for_status()
+            response.raise_for_status()
 
-        data = response.json()
+            data = response.json()
+            try:
+                content = data["choices"][0]["message"]["content"]
+            except (
+                KeyError,
+                IndexError,
+                TypeError,
+            ) as exc:
+                raise LLMProviderError("Invalid chat completion response") from exc
 
-        try:
-            content = data["choices"][0]["message"]["content"]
-        except (
-            KeyError,
-            IndexError,
-            TypeError,
-        ) as exc:
-            raise LLMProviderError("Invalid chat completion response") from exc
+            if content is None:
+                content = ""
+            if not isinstance(content, str):
+                raise LLMProviderError("Expected text content from LLM")
 
-        if content is None:
-            return ""
-
-        if not isinstance(content, str):
-            raise LLMProviderError("Expected text content from LLM")
-
-        return content
+            usage = data.get("usage")
+            update: dict[str, Any] = {
+                "output": {"output_characters": len(content)},
+            }
+            usage_details = _usage_details(usage)
+            cost_details = _cost_details(usage)
+            if usage_details:
+                update["usage_details"] = usage_details
+            if cost_details:
+                update["cost_details"] = cost_details
+            response_model = data.get("model")
+            if isinstance(response_model, str):
+                update["model"] = response_model
+            observation.update(**update)
+            return content
 
     async def stream(
         self,
@@ -135,56 +222,80 @@ class OpenAICompatProvider:
             True,
             kwargs,
         )
-        async with (
-            httpx.AsyncClient(
-                timeout=self.timeout,
-                transport=self.transport,
-            ) as client,
-            client.stream(
-                "POST",
-                f"{self.base_url}/chat/completions",
-                headers=self._headers(),
-                json=payload,
-            ) as response,
-        ):
-            response.raise_for_status()
+        model_parameters = {
+            key: value
+            for key, value in kwargs.items()
+            if key in {"temperature", "max_tokens", "top_p"}
+            and isinstance(value, (str, int, float, bool))
+        }
+        output_chunks: list[str] = []
+        usage: Any = None
+        response_model = self.model
 
-            async for line in response.aiter_lines():
-                line = line.strip()
+        with start_span(
+            "llm.stream",
+            as_type="generation",
+            input=_message_summary(messages),
+            model=self.model,
+            model_parameters=model_parameters,
+        ) as observation:
+            try:
+                async with (
+                    httpx.AsyncClient(
+                        timeout=self.timeout,
+                        transport=self.transport,
+                    ) as client,
+                    client.stream(
+                        "POST",
+                        f"{self.base_url}/chat/completions",
+                        headers=self._headers(),
+                        json=payload,
+                    ) as response,
+                ):
+                    response.raise_for_status()
 
-                if not line:
-                    continue
+                    async for line in response.aiter_lines():
+                        line = line.strip()
+                        if not line or line.startswith(":") or not line.startswith("data:"):
+                            continue
 
-                if line.startswith(":"):
-                    continue
+                        raw_data = line[len("data:") :].strip()
+                        if raw_data == "[DONE]":
+                            break
 
-                if not line.startswith("data:"):
-                    continue
+                        try:
+                            event = json.loads(raw_data)
+                        except json.JSONDecodeError as exc:
+                            raise LLMProviderError("Invalid SSE JSON from LLM") from exc
 
-                raw_data = line[len("data:") :].strip()
+                        event_usage = event.get("usage")
+                        if isinstance(event_usage, Mapping):
+                            usage = event_usage
+                        event_model = event.get("model")
+                        if isinstance(event_model, str):
+                            response_model = event_model
 
-                if raw_data == "[DONE]":
-                    break
+                        choices = event.get("choices", [])
+                        if not choices:
+                            continue
 
-                try:
-                    event = json.loads(raw_data)
-                except json.JSONDecodeError as exc:
-                    raise LLMProviderError("Invalid SSE JSON from LLM") from exc
-
-                choices = event.get(
-                    "choices",
-                    [],
-                )
-
-                if not choices:
-                    continue
-
-                delta = choices[0].get("delta") or {}
-
-                content = delta.get("content")
-
-                if isinstance(content, str) and content:
-                    yield content
+                        delta = choices[0].get("delta") or {}
+                        content = delta.get("content")
+                        if isinstance(content, str) and content:
+                            output_chunks.append(content)
+                            yield content
+            finally:
+                update: dict[str, Any] = {
+                    "output": {"output_characters": sum(map(len, output_chunks))},
+                    "model": response_model,
+                }
+                usage_details = _usage_details(usage)
+                cost_details = _cost_details(usage)
+                if usage_details:
+                    update["usage_details"] = usage_details
+                if cost_details:
+                    update["cost_details"] = cost_details
+                observation.update(**update)
 
 
 def build_llm_provider() -> LLMProvider:

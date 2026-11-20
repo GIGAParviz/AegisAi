@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from app.observability.tracing import get_trace_id
 from app.services.llm import LLMProviderError, build_llm_provider
 
 router = APIRouter(
@@ -30,7 +31,7 @@ def sse(event: str, data: object) -> str:
 
 @router.post("/stream")
 async def chat_stream(request: ChatRequest):
-    trace_id = str(uuid.uuid4())
+    trace_id = get_trace_id() or str(uuid.uuid4())
 
     async def event_stream():
         try:

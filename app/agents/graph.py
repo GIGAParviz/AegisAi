@@ -18,6 +18,7 @@ from app.db.engine import async_session_factory
 from app.db.models.approval import Approval, ApprovalStatus
 from app.db.models.document import Document
 from app.db.models.policy_audit import PolicyDecision
+from app.observability.tracing import start_span
 from app.policies.actions import (
     DEFAULT_ACTION_REGISTRY,
     ActionParseError,
@@ -134,6 +135,18 @@ async def _execute_get_document(
         "status": document.status.value,
         "created_at": document.created_at.isoformat(),
     }
+
+
+def _tool_output_summary(result: Any) -> dict[str, Any]:
+    if isinstance(result, dict):
+        summary: dict[str, Any] = {"keys": sorted(str(key) for key in result)}
+        items = result.get("results")
+        if isinstance(items, list):
+            summary["result_count"] = len(items)
+        return summary
+    if isinstance(result, list):
+        return {"result_count": len(result)}
+    return {"result_type": type(result).__name__}
 
 
 class AgentGraph:
@@ -438,17 +451,24 @@ class AgentGraph:
 
         user = state.get("user")
         session = state.get("session")
+        action_name = str(getattr(proposal, "name", "unknown"))
 
         try:
-            if session is not None:
-                action_result = await self.execute_action(proposal, user, session)
-            else:
-                async with self.session_factory() as local_session:
-                    action_result = await self.execute_action(
-                        proposal,
-                        user,
-                        local_session,
-                    )
+            with start_span(
+                "agent.tool",
+                as_type="tool",
+                input={"action": action_name},
+            ) as observation:
+                if session is not None:
+                    action_result = await self.execute_action(proposal, user, session)
+                else:
+                    async with self.session_factory() as local_session:
+                        action_result = await self.execute_action(
+                            proposal,
+                            user,
+                            local_session,
+                        )
+                observation.update(output=_tool_output_summary(action_result))
         except McpToolError as exc:
             return {
                 "action_result": None,

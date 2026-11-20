@@ -47,6 +47,18 @@ class Settings(BaseSettings):
         default="",
         validation_alias="AGENT_CHECKPOINT_URL",
     )
+    langfuse_public_key: str = Field(
+        default="",
+        validation_alias="LANGFUSE_PUBLIC_KEY",
+    )
+    langfuse_secret_key: str = Field(
+        default="",
+        validation_alias="LANGFUSE_SECRET_KEY",
+    )
+    langfuse_base_url: str = Field(
+        default="https://cloud.langfuse.com",
+        validation_alias="LANGFUSE_BASE_URL",
+    )
     cors_origins: list[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
