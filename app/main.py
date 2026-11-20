@@ -13,7 +13,9 @@ from app.api.chat import router as chat_router
 from app.api.documents import router as doc_router
 from app.api.health import router as health_router
 from app.api.middleware.rate_limit import RateLimitMiddleware
+from app.api.middleware.tracing import RequestTracingMiddleware
 from app.core.config import settings
+from app.observability.tracing import shutdown_tracing
 
 
 @asynccontextmanager
@@ -34,8 +36,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         try:
             yield
         finally:
-            await app.state.redis.aclose()
-            
+            try:
+                await app.state.redis.aclose()
+            finally:
+                shutdown_tracing()
 app = FastAPI(
     title=settings.app_name,
     debug=settings.debug,
@@ -77,5 +81,9 @@ app.add_middleware(
         "Retry-After",
         "X-RateLimit-Limit",
         "X-RateLimit-Remaining",
+        "X-Request-ID",
+        "X-Trace-Id",
     ],
 )
+
+app.add_middleware(RequestTracingMiddleware)

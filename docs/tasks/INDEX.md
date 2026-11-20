@@ -52,7 +52,7 @@
 
 ## فاز 6 — Observability & MLOps
 
-- [ ] `T6.1-langfuse-tracing.md` — Tracing با Langfuse
+- [x] `T6.1-langfuse-tracing.md` — Tracing با Langfuse
 - [ ] `T6.2-golden-evals.md` — Golden dataset + ارزیابی RAG
 - [ ] `T6.3-quality-gate-ci.md` — دروازه کیفیت در CI
 - [ ] `T6.4-mlflow-optional.md` — MLflow (اختیاری)

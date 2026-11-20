@@ -16,6 +16,7 @@ from app.core.config import settings
 from app.db.engine import async_session_factory
 from app.db.models.document import Document, DocumentStatus
 from app.db.models.user import User
+from app.observability.tracing import start_span
 from app.services.embeddings import build_embedding_provider
 from app.services.tokenizer import Encoding, FallbackEncoding, get_encoding
 from app.services.vector_store import (
@@ -227,6 +228,38 @@ def _build_sources(
 
 
 async def build(
+    query: str,
+    session_id: str,
+    user: User,
+    *,
+    redis_client: Redis | None = None,
+    vector_store: VectorStore | None = None,
+    session_factory: async_sessionmaker[AsyncSession] | None = None,
+) -> ContextPayload:
+    with start_span(
+        "context.build",
+        input={"query_characters": len(query)},
+    ) as observation:
+        payload = await _build_context(
+            query=query,
+            session_id=session_id,
+            user=user,
+            redis_client=redis_client,
+            vector_store=vector_store,
+            session_factory=session_factory,
+        )
+        observation.update(
+            output={
+                "history_messages": len(payload.history),
+                "sources": len(payload.sources),
+                "facts": len(payload.facts),
+                "token_count": payload.token_count,
+            }
+        )
+        return payload
+
+
+async def _build_context(
     query: str,
     session_id: str,
     user: User,

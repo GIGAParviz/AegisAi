@@ -297,3 +297,13 @@ _(بازبینی ۲۱:۰۰ کرون بدون گزارش کاربر — شواه�
 - refresh token versioning و replay protection اضافه شد.
 - typo reranker و scratchpad ریشه‌ای `tests/ttt.py` حذف شد؛ `test_lang.py` با `testpaths` از collection تست کنار گذاشته شد.
 - وضعیت T4.2 تا T4.4، T5.1 و T5.2 با کد همگام شد؛ T5.1 و T5.2 هنوز partial هستند.
+
+---
+
+## 2026-11-20 — T6.1 Langfuse tracing
+
+- Added Langfuse SDK v5.2 with opt-in export: tracing stays no-op unless both `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` are configured.
+- Added ASGI request tracing with matching `X-Request-ID` / `X-Trace-Id`, request-id logging, and nested context, LLM generation, tool, policy-gate, and verifier observations. Prompts, query text, and tool results are summarized rather than exported raw.
+- LLM generations record token usage and cost when the OpenAI-compatible provider includes them; missing provider usage/cost is not fabricated.
+- Verification: `uv run --extra dev pytest -q` → **79 passed, 1 skipped**; `uv run --extra dev ruff check .` → **All checks passed**.
+- Live Langfuse export was not smoke-tested; remote CI for this branch is pending push.

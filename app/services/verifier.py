@@ -8,6 +8,7 @@ from typing import Any, TypeVar
 from pydantic import BaseModel, ValidationError
 
 from app.core.config import settings
+from app.observability.tracing import start_span
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -26,6 +27,28 @@ class VerifyResult:
 
 
 def verify(
+    output: str | dict[str, Any] | BaseModel,
+    schema: type[T] | None = None,
+    rules: Sequence[Rule] | None = None,
+) -> VerifyResult:
+    with start_span(
+        "verifier.verify",
+        input={
+            "schema": schema.__name__ if schema is not None else None,
+            "rule_count": len(rules or []),
+        },
+    ) as observation:
+        result = _verify(output, schema=schema, rules=rules)
+        observation.update(
+            output={
+                "is_valid": result.is_valid,
+                "error_count": len(result.errors),
+            }
+        )
+        return result
+
+
+def _verify(
     output: str | dict[str, Any] | BaseModel,
     schema: type[T] | None = None,
     rules: Sequence[Rule] | None = None,

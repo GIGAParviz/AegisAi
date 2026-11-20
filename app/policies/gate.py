@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.policy_audit import PolicyAudit, PolicyDecision
 from app.db.models.user import UserRole
+from app.observability.tracing import start_span
 from app.policies.actions import (
     DEFAULT_ACTION_REGISTRY,
     ActionDefinition,
@@ -43,6 +44,26 @@ class PolicyGate:
         self.registry = registry or DEFAULT_ACTION_REGISTRY
 
     async def check(
+        self,
+        proposal_input: ActionProposal | dict[str, Any] | str | bytes,
+        user: Any,
+        session: AsyncSession,
+    ) -> GateDecision:
+        with start_span(
+            "policy.gate",
+            input={"operation": "evaluate_action"},
+        ) as observation:
+            decision = await self._check(proposal_input, user, session)
+            observation.update(
+                output={
+                    "action": decision.action,
+                    "decision": decision.decision.value,
+                    "allowed": decision.allowed,
+                }
+            )
+            return decision
+
+    async def _check(
         self,
         proposal_input: ActionProposal | dict[str, Any] | str | bytes,
         user: Any,
