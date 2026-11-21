@@ -10,8 +10,8 @@ const state = vi.hoisted(() => ({ documents: [] as Document[], messages: [] as C
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams(state.params) }))
 vi.mock('@/hooks/useDocuments', () => ({ useDocuments: () => ({ documents: state.documents, loading: false, error: null }), loadDocuments: vi.fn().mockResolvedValue([]), refreshPending: vi.fn().mockResolvedValue(undefined), uploadDocument: vi.fn() }))
 vi.mock('@/hooks/useChat', () => ({ useChat: () => ({ messages: state.messages, streaming: false, error: null, sendMessage: state.sendMessage, clearMessages: vi.fn(), stopStreaming: vi.fn() }) }))
-const ready: Document = { id: 'd1', filename: 'source.pdf', status: 'READY', mime: 'application/pdf', owner_id: 'u1', error: null, created_at: '' }
-beforeEach(() => { vi.clearAllMocks(); state.params = ''; state.documents = [ready]; state.messages = [{ role: 'assistant', content: 'Grounded answer', citations: [{ document_id: 'd1', chunk_index: 3, text: 'Original passage' }], trace_id: 'trace-1' }]; vi.mocked(uploadDocument).mockResolvedValue({ ...ready, id: 'd2', filename: 'new.txt', status: 'QUEUED' }) })
+const ready: Document = { id: 'd1', filename: 'source.pdf', status: 'ready', mime: 'application/pdf', owner_id: 'u1', error: null, created_at: '' }
+beforeEach(() => { vi.clearAllMocks(); state.params = ''; state.documents = [ready]; state.messages = [{ role: 'assistant', content: 'Grounded answer', citations: [{ document_id: 'd1', chunk_index: 3, text: 'Original passage' }], trace_id: 'trace-1' }]; vi.mocked(uploadDocument).mockResolvedValue({ ...ready, id: 'd2', filename: 'new.txt', status: 'queued' }) })
 const view = () => <NextIntlClientProvider locale="en" messages={messages}><ChatWorkspace /></NextIntlClientProvider>
 it('renders real citation passages and accepts an attached file', async () => {
   render(view())
@@ -25,12 +25,18 @@ it('renders real citation passages and accepts an attached file', async () => {
   expect(screen.getByTestId('send-chat')).toBeDisabled()
 })
 it('waits for selected documents to finish processing then sends their IDs', async () => {
-  state.documents = [{ ...ready, status: 'PROCESSING' }]
+  state.documents = [{ ...ready, status: 'queued' }]
   const { rerender } = render(view())
   fireEvent.click(screen.getByRole('checkbox'))
   fireEvent.change(screen.getByTestId('chat-input'), { target: { value: 'Question' } })
+  expect(screen.getByTestId('attachment-chip')).toHaveTextContent(messages.documents.statusQueued)
+  expect(screen.getByTestId('send-chat')).toBeDisabled()
+  state.documents = [{ ...ready, status: 'processing' }]
+  rerender(view())
+  expect(screen.getByTestId('attachment-chip')).toHaveTextContent(messages.documents.statusProcessing)
   expect(screen.getByTestId('send-chat')).toBeDisabled()
   state.documents = [ready]; rerender(view())
+  expect(screen.getByTestId('attachment-chip')).toHaveTextContent(messages.documents.statusReady)
   expect(screen.getByTestId('send-chat')).toBeEnabled()
   fireEvent.click(screen.getByTestId('send-chat'))
   await waitFor(() => expect(state.sendMessage).toHaveBeenCalledWith('Question', { documentIds: ['d1'] }))
@@ -60,6 +66,7 @@ it('renders the actual metadata-only citation contract without presenting a head
 it('supports Persian labels and explains that only selected documents provide context', () => {
   render(<NextIntlClientProvider locale="fa" messages={fa}><ChatWorkspace /></NextIntlClientProvider>)
   expect(screen.getByRole('heading', { name: fa.chat.title })).toBeInTheDocument()
+  expect(screen.getByText(fa.documents.statusReady)).toBeInTheDocument()
   expect(screen.getByText(fa.chat.libraryHint)).toBeInTheDocument()
   expect(messages.chat.libraryHint).toContain('Without a selection, no document context is sent')
 })

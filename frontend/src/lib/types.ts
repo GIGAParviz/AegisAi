@@ -29,11 +29,18 @@ export interface Document {
   id: string
   filename: string
   mime: string
-  status: 'QUEUED' | 'PROCESSING' | 'READY' | 'FAILED'
+  status: 'queued' | 'processing' | 'ready' | 'failed'
   error: string | null
   owner_id: string
   created_at: string
 }
+
+export const documentStatusMessage = {
+  queued: 'statusQueued',
+  processing: 'statusProcessing',
+  ready: 'statusReady',
+  failed: 'statusFailed',
+} as const satisfies Record<Document['status'], string>
 
 export interface DocumentChunk {
   id: string

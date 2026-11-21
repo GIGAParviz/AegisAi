@@ -36,7 +36,7 @@ export async function refreshDocument(id: string): Promise<Document> {
   const doc = await apiGet<Document>(`/documents/${id}`); if (generation === libraryGeneration) useDocStore.getState().patchDocument(id, doc); return doc
 }
 export async function refreshPending(): Promise<void> {
-  const pending = useDocStore.getState().documents.filter(d => d.status === 'QUEUED' || d.status === 'PROCESSING')
+  const pending = useDocStore.getState().documents.filter(d => d.status === 'queued' || d.status === 'processing')
   await Promise.all(pending.map(d => refreshDocument(d.id)))
 }
 export function useDocuments() {

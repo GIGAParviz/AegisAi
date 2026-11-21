@@ -25,16 +25,17 @@ import { StatusPill } from '@/components/ui/StatusPill'
 import { useHealth } from '@/hooks/useHealth'
 import { Link } from '@/lib/navigation'
 import { refreshPending, useDocuments } from '@/hooks/useDocuments'
+import { documentStatusMessage } from '@/lib/types'
 import type { Document } from '@/lib/types'
 
 function statusTone(status: Document['status']) {
   switch (status) {
-    case 'READY':
+    case 'ready':
       return 'ok' as const
-    case 'PROCESSING':
-    case 'QUEUED':
+    case 'processing':
+    case 'queued':
       return 'warn' as const
-    case 'FAILED':
+    case 'failed':
       return 'danger' as const
   }
 }
@@ -85,9 +86,9 @@ export default function DashboardPage() {
 
   const counts = {
     total: documents.length,
-    ready: documents.filter((d) => d.status === 'READY').length,
-    active: documents.filter((d) => d.status === 'PROCESSING' || d.status === 'QUEUED').length,
-    failed: documents.filter((d) => d.status === 'FAILED').length,
+    ready: documents.filter((d) => d.status === 'ready').length,
+    active: documents.filter((d) => d.status === 'processing' || d.status === 'queued').length,
+    failed: documents.filter((d) => d.status === 'failed').length,
   }
 
   const uptime = health?.system.UpTime
@@ -171,7 +172,7 @@ export default function DashboardPage() {
                         {new Date(doc.created_at).toLocaleDateString()}
                       </span>
                     </span>
-                    <StatusPill tone={statusTone(doc.status)} label={td(`status${doc.status}`)} pulse={doc.status === 'PROCESSING'} />
+                    <StatusPill tone={statusTone(doc.status)} label={td(documentStatusMessage[doc.status])} pulse={doc.status === 'processing'} />
                     <ArrowRight className="size-4 text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-accent rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
                   </Link>
                 </li>
