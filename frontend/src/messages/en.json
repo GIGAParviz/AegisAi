@@ -382,6 +382,7 @@
     "selectDocument": "Select document",
     "invalidFile": "Use PDF, DOCX, TXT or MD files up to 50 MB.",
     "waitForFiles": "Selected files must finish processing before sending. Remove a failed or unavailable attachment to continue.",
+    "webSearch": "Search the web",
     "privacy": "Documents are scoped to your account. Provider credentials stay on the server.",
     "title": "RAG Chat",
     "placeholder": "Ask anything… (Enter to send, Shift+Enter for a new line)",

@@ -1,16 +1,33 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Bot, FileText, Paperclip, Send, Square, Trash2, X, RefreshCw, BookOpen } from 'lucide-react'
+import { Bot, FileText, Globe, Paperclip, Send, Square, Trash2, X, RefreshCw, BookOpen } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useChat } from '@/hooks/useChat'
 import { loadDocuments, refreshPending, uploadDocument, useDocuments } from '@/hooks/useDocuments'
 import { errorMessage } from '@/lib/workspace-api'
 import { documentStatusMessage } from '@/lib/types'
 import type { ChatMessage, Document } from '@/lib/types'
+
+function MessageText({ message }: { message: ChatMessage }) {
+  const citations = message.web_citations
+  if (!citations?.length) return message.content || '…'
+
+  const characters = Array.from(message.content)
+  const parts = citations.map(({ url, title, end_index }, index) => {
+    const previousEnd = citations[index - 1]?.end_index ?? 0
+    const text = characters.slice(previousEnd, end_index).join('')
+    return <Fragment key={index}>{text}<a
+      className="ms-1 font-medium text-accent underline underline-offset-2"
+      href={url} target="_blank" rel="noopener noreferrer" aria-label={title} title={title}
+    >[{index + 1}]</a></Fragment>
+  })
+  return <>{parts}{characters.slice(citations[citations.length - 1].end_index).join('')}</>
+}
+
 function Message({ message, documents }: { message: ChatMessage; documents: Document[] }) {
   const t = useTranslations('chat'), u = message.role === 'user'
-  return <article className={`chat-message ${u ? 'is-user' : ''}`}><span className="studio-icon">{u ? <span>{t('you')}</span> : <Bot size={20} />}</span><div className="min-w-0 flex-1"><p className="mb-2 text-xs font-medium text-muted">{u ? t('you') : 'Aegis'}</p><p className="whitespace-pre-wrap break-words leading-7">{message.content || '…'}</p>
+  return <article className={`chat-message ${u ? 'is-user' : ''}`}><span className="studio-icon">{u ? <span>{t('you')}</span> : <Bot size={20} />}</span><div className="min-w-0 flex-1"><p className="mb-2 text-xs font-medium text-muted">{u ? t('you') : 'Aegis'}</p><p className="whitespace-pre-wrap break-words leading-7"><MessageText message={message} /></p>
     {!!message.document_ids?.length && <p className="mt-2 text-xs opacity-70">{message.document_ids.map(id => documents.find(d => d.id === id)?.filename ?? id).join(' · ')}</p>}
     {!!message.citations?.length && <div className="citation-list"><p className="eyebrow">{t('sources')}</p>{message.citations.map((citation, i) => <details key={`${citation.document_id}-${i}`} className="citation"><summary><BookOpen size={14} /><span>{citation.filename ?? documents.find(d => d.id === citation.document_id)?.filename ?? citation.document_id}</span><span className="ms-auto font-mono text-xs">{citation.chunk_index !== undefined ? `#${citation.chunk_index}` : i + 1}</span></summary>{citation.heading && <p className="px-3 pt-3 text-xs font-medium text-muted">{citation.heading}</p>}<p className="whitespace-pre-wrap p-3 text-sm">{citation.text ?? citation.content ?? t('sourceNoExcerpt')}</p><p className="px-3 pb-3 font-mono text-xs text-muted" dir="ltr">{citation.document_id}</p></details>)}</div>}
     {message.trace_id && <p className="mt-3 break-all font-mono text-[10px] text-faint">{t('traceBadge')}: {message.trace_id}</p>}
@@ -21,6 +38,7 @@ export default function ChatWorkspace() {
   const params = useSearchParams(), docParam = params.get('doc')
   const { messages, streaming, error, sendMessage, clearMessages, stopStreaming } = useChat()
   const { documents, loading, error: documentsError } = useDocuments()
+  const [webSearch, setWebSearch] = useState(false)
   const [selected, setSelected] = useState<string[]>(docParam ? [docParam] : []), [input, setInput] = useState(''), [uploads, setUploads] = useState<string[]>([]), [uploadError, setUploadError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null), bottomRef = useRef<HTMLDivElement>(null)
   useEffect(() => { bottomRef.current?.scrollIntoView?.({ behavior: 'smooth' }) }, [messages])
@@ -38,7 +56,12 @@ export default function ChatWorkspace() {
     }
     if (fileRef.current) fileRef.current.value = ''
   }
-  async function submit() { if (!input.trim() || streaming || blocked) return; const text = input.trim(); setInput(''); await sendMessage(text, { documentIds: readyIds }) }
+  async function submit() {
+    if (!input.trim() || streaming || blocked) return
+    const text = input.trim()
+    setInput('')
+    await sendMessage(text, { documentIds: readyIds, ...(webSearch ? { webSearch } : {}) })
+  }
   const statusLabel = (status: Document['status']) => d(documentStatusMessage[status])
   return <div className="chat-workspace">
     <div className="chat-main"><div className="flex items-center justify-between border-b border-line px-5 py-4"><div><p className="eyebrow">{t('workspace')}</p><h1 className="display text-2xl">{t('title')}</h1></div><button onClick={clearMessages} disabled={streaming || !messages.length} className="studio-icon" aria-label={t('clear')}><Trash2 size={17} /></button></div>
@@ -54,7 +77,13 @@ export default function ChatWorkspace() {
         <div className="composer-box"><button className="studio-icon" onClick={() => fileRef.current?.click()} disabled={streaming} aria-label={t('attach')} data-testid="attach-file"><Paperclip size={20} /></button><input ref={fileRef} type="file" multiple accept=".pdf,.docx,.txt,.md" className="sr-only" aria-label={t('attach')} data-testid="chat-file-input" onChange={e => { void attach(e.target.files) }} />
           <textarea aria-label={t('placeholder')} data-testid="chat-input" rows={2} value={input} onChange={e => setInput(e.target.value)} placeholder={t('placeholder')} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void submit() } }} />
           <button className="composer-send" data-testid={streaming ? 'stop-chat' : 'send-chat'} onClick={streaming ? stopStreaming : submit} disabled={!streaming && (!input.trim() || blocked)} aria-label={streaming ? t('stop') : t('send')}>{streaming ? <Square size={18} /> : <Send size={18} className="rtl:-scale-x-100" />}</button>
-        </div><p className="mt-2 text-xs text-muted">{blocked ? t('waitForFiles') : t('composerHint')}</p>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <button type="button" aria-pressed={webSearch} disabled={streaming}
+            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted hover:bg-accent/10 aria-pressed:bg-accent/10 aria-pressed:text-accent disabled:opacity-50"
+            onClick={() => setWebSearch(value => !value)}><Globe size={15} aria-hidden="true" />{t('webSearch')}</button>
+          <p className="text-xs text-muted">{blocked ? t('waitForFiles') : t('composerHint')}</p>
+        </div>
       </div></div>
     </div>
     <aside className="chat-library" aria-label={t('library')}><div className="flex items-center justify-between"><h2 className="display text-xl">{t('library')}</h2><button aria-label={c('refresh')} onClick={() => { void loadDocuments().catch(() => {}) }} className="studio-icon"><RefreshCw size={15} /></button></div><p className="my-3 text-xs text-muted">{t('libraryHint')}</p>

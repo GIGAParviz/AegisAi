@@ -70,3 +70,23 @@ it('supports Persian labels and explains that only selected documents provide co
   expect(screen.getByText(fa.chat.libraryHint)).toBeInTheDocument()
   expect(messages.chat.libraryHint).toContain('Without a selection, no document context is sent')
 })
+it('opts into web search and shows the source link inline', async () => {
+  state.messages = [{
+    role: 'assistant', content: 'سلام 🌐. ادامه',
+    web_citations: [{ url: 'https://example.com', title: 'Web source', end_index: 7 }],
+  }]
+  render(view())
+  const source = screen.getByRole('link', { name: 'Web source' })
+  expect(source).toHaveAttribute('href', 'https://example.com')
+  expect(source.parentElement).toHaveTextContent('سلام 🌐.[1] ادامه')
+
+  const toggle = screen.getByRole('button', { name: messages.chat.webSearch })
+  expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  fireEvent.click(toggle)
+  expect(toggle).toHaveAttribute('aria-pressed', 'true')
+  fireEvent.change(screen.getByTestId('chat-input'), { target: { value: 'Search for evidence' } })
+  fireEvent.click(screen.getByTestId('send-chat'))
+  await waitFor(() => expect(state.sendMessage).toHaveBeenCalledWith('Search for evidence', {
+    documentIds: [], webSearch: true,
+  }))
+})

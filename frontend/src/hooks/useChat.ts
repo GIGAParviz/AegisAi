@@ -1,9 +1,9 @@
 'use client'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getAuthToken } from '@/lib/auth-token'
-import type { ChatMessage, Citation } from '@/lib/types'
+import type { ChatMessage, Citation, WebCitation } from '@/lib/types'
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
-interface SendOptions { documentIds?: string[]; sessionId?: string; onToken?: (token: string) => void; onDone?: (trace: string) => void; onError?: (error: string, trace: string) => void }
+interface SendOptions { documentIds?: string[]; sessionId?: string; webSearch?: boolean; onToken?: (token: string) => void; onDone?: (trace: string) => void; onError?: (error: string, trace: string) => void }
 export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]), [streaming, setStreaming] = useState(false), [error, setError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -21,12 +21,20 @@ export function useChat() {
       if (!data.length) return
       const parsed = JSON.parse(data.join('\n'))
       if (event === 'token') { const token = typeof parsed === 'string' ? parsed : parsed.token ?? ''; updateLast({}, token); options.onToken?.(token) }
-      if (event === 'done') { complete = true; updateLast({ trace_id: parsed.trace_id, citations: Array.isArray(parsed.citations) ? parsed.citations as Citation[] : [] }); options.onDone?.(parsed.trace_id ?? '') }
+      if (event === 'done') {
+        complete = true
+        updateLast({
+          trace_id: parsed.trace_id,
+          citations: Array.isArray(parsed.citations) ? parsed.citations as Citation[] : [],
+          web_citations: Array.isArray(parsed.web_citations) ? parsed.web_citations as WebCitation[] : [],
+        })
+        options.onDone?.(parsed.trace_id ?? '')
+      }
       if (event === 'error') { errorTrace = parsed.trace_id ?? ''; updateLast({ trace_id: errorTrace }); throw new Error(parsed.error ?? 'Stream failed') }
     }
     try {
       const token = getAuthToken()
-      const response = await fetch(`${BACKEND_URL}/chat/stream`, { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ messages: history.map(({ role, content }) => ({ role, content })), document_ids: options.documentIds ?? [], ...(options.sessionId ? { session_id: options.sessionId } : {}) }) })
+      const response = await fetch(`${BACKEND_URL}/chat/stream`, { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ messages: history.map(({ role, content }) => ({ role, content })), document_ids: options.documentIds ?? [], ...(options.sessionId ? { session_id: options.sessionId } : {}), ...(options.webSearch ? { web_search: true } : {}) }) })
       if (!response.ok || !response.body) { let detail = `Request failed (${response.status})`; try { const data = await response.json(); if (typeof data.detail === 'string') detail = data.detail } catch {} throw new Error(detail) }
       const reader = response.body.getReader(), decoder = new TextDecoder(); let buffer = ''
       try {

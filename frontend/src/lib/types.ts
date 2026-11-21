@@ -53,7 +53,10 @@ export interface DocumentChunk {
 
 export interface Citation { document_id: string; chunk_index?: number; text?: string; content?: string; filename?: string; heading?: string | null; score?: number }
 
+export interface WebCitation { url: string; title: string; end_index: number }
+
 export interface ChatMessage {
+  web_citations?: WebCitation[]
   citations?: Citation[]
   trace_id?: string
   document_ids?: string[]
@@ -62,6 +65,7 @@ export interface ChatMessage {
 }
 
 export interface ChatRequest {
+  web_search?: boolean
   document_ids?: string[]
   session_id?: string
   messages: ChatMessage[]

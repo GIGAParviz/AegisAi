@@ -6,7 +6,7 @@ from collections.abc import (
     Mapping,
     Sequence,
 )
-from typing import Any, Protocol
+from typing import Any, Protocol, TypedDict
 
 import httpx
 
@@ -14,6 +14,12 @@ from app.core.config import settings
 from app.observability.tracing import start_span
 
 Message = Mapping[str, Any]
+
+
+class WebCitation(TypedDict):
+    url: str
+    title: str
+    end_index: int
 
 
 class LLMProviderError(RuntimeError):
@@ -81,6 +87,34 @@ def _cost_details(usage: Any) -> dict[str, float]:
     return {}
 
 
+def _web_citations(output: list[dict[str, Any]]) -> list[WebCitation]:
+    citations: list[WebCitation] = []
+    offset = 0
+    for item in output:
+        if item.get("type") != "message":
+            continue
+        for part in item.get("content", []):
+            if part.get("type") != "output_text":
+                continue
+            text_length = len(part["text"])
+            for annotation in part.get("annotations", []):
+                if annotation.get("type") != "url_citation":
+                    continue
+                url = annotation.get("url")
+                end_index = annotation.get("end_index")
+                if not isinstance(url, str) or not url.startswith(("https://", "http://")):
+                    continue
+                if not isinstance(end_index, int) or not 0 < end_index <= text_length:
+                    continue
+                citations.append({
+                    "url": url,
+                    "title": annotation.get("title") or url,
+                    "end_index": offset + end_index,
+                })
+            offset += text_length
+    return sorted(citations, key=lambda citation: citation["end_index"])
+
+
 class LLMProvider(Protocol):
     async def complete(
         self,
@@ -144,6 +178,50 @@ class OpenAICompatProvider:
             **options,
             "stream": stream,
         }
+
+    async def stream_web_search(
+        self,
+        messages: Sequence[Message],
+    ) -> AsyncIterator[str | WebCitation]:
+        payload = {
+            "model": self.model,
+            "input": [dict(message) for message in messages],
+            "tools": [{"type": "web_search"}],
+            "tool_choice": "required",
+            "store": False,
+            "stream": True,
+        }
+        with start_span(
+            "llm.web_search",
+            as_type="generation",
+            model=self.model,
+            input=_message_summary(messages),
+        ):
+            async with (
+                httpx.AsyncClient(timeout=self.timeout, transport=self.transport) as client,
+                client.stream(
+                    "POST", f"{self.base_url}/responses",
+                    headers=self._headers(), json=payload,
+                ) as response,
+            ):
+                response.raise_for_status()
+                async for line in response.aiter_lines():
+                    if not line.startswith("data:"):
+                        continue
+                    data = line.removeprefix("data:").strip()
+                    if data == "[DONE]":
+                        break
+                    event = json.loads(data)
+                    match event.get("type"):
+                        case "response.output_text.delta":
+                            yield event["delta"]
+                        case "response.completed":
+                            for citation in _web_citations(event["response"]["output"]):
+                                yield citation
+                            return
+                        case "response.failed" | "response.incomplete" | "error":
+                            raise LLMProviderError("Web search response failed")
+                raise LLMProviderError("Web search stream ended before completion")
 
     async def complete(
         self,
