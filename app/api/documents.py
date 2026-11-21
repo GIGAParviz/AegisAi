@@ -105,6 +105,16 @@ async def upload_document(
     return document
 
 
+@router.get("", response_model=list[DocumentResponse])
+async def list_documents(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    return (await session.scalars(select(Document).where(
+        Document.owner_id == current_user.id,
+    ).order_by(Document.created_at.desc()))).all()
+
+
 @router.get(
     "/{document_id}",
     response_model=DocumentResponse,

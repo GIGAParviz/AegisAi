@@ -44,12 +44,19 @@ export interface DocumentChunk {
   created_at: string
 }
 
+export interface Citation { document_id: string; chunk_index?: number; text?: string; content?: string; filename?: string; heading?: string | null; score?: number }
+
 export interface ChatMessage {
+  citations?: Citation[]
+  trace_id?: string
+  document_ids?: string[]
   role: 'system' | 'user' | 'assistant'
   content: string
 }
 
 export interface ChatRequest {
+  document_ids?: string[]
+  session_id?: string
   messages: ChatMessage[]
 }
 

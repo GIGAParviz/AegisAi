@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './studio.css';
 
 /* ── AegisAI theme: warm paper, olive accent, plum warmth ───────────── */
 @theme {

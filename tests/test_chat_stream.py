@@ -3,6 +3,7 @@ import json
 import pytest
 
 import app.api.chat as chat_api
+from tests.test_workflows import identity
 
 
 class FakeProvider:
@@ -12,7 +13,8 @@ class FakeProvider:
 
 
 @pytest.mark.asyncio
-async def test_chat_stream_returns_sse(client, monkeypatch):
+async def test_chat_stream_returns_sse(client, monkeypatch, session_factory):
+    _, headers = await identity(session_factory)
     monkeypatch.setattr(
         chat_api,
         "build_llm_provider",
@@ -21,6 +23,7 @@ async def test_chat_stream_returns_sse(client, monkeypatch):
 
     response = await client.post(
         "/chat/stream",
+        headers=headers,
         json={
             "messages": [
                 {
