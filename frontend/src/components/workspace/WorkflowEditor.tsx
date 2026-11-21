@@ -25,8 +25,9 @@ export default function WorkflowEditor({ workflowId }: { workflowId: string | nu
   function add(kind: NodeKind) { if (locked) return; if (jsonError) { setError(t('invalidJson')); return } const nodeId = `${kind}-${crypto.randomUUID().slice(0, 8)}`; change({ ...graph, nodes: [...graph.nodes, { id: nodeId, type: kind, position: { x: 180 + graph.nodes.length * 35, y: 80 + graph.nodes.length * 45 }, config: defaultConfig(kind) }] }); setSelected(nodeId); setJsonError(false) }
   async function save() {
     if (locked) return
+    setError('')
     const errors = validateGraph(graph); if (!name.trim()) errors.push('name'); if (jsonError) errors.push('json'); setValidation(errors); if (errors.length) return
-    setBusy(true); setError('')
+    setBusy(true)
     try { const saved = await workspaceApi.saveWorkflow(id, { name: name.trim(), description, ...graph }); setId(saved.id); setGraph({ nodes: saved.nodes, edges: saved.edges }); setDirty(false); if (!id) router.replace(`/app/workflows/${saved.id}`) } catch (e) { setError(await errorMessage(e)) } finally { setBusy(false) }
   }
   async function execute() { if (!id || dirty || locked || jsonError) return; setBusy(true); setError(''); try { setRun(await workspaceApi.startRun(id, input)) } catch (e) { setError(await errorMessage(e)) } finally { setBusy(false) } }

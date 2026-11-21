@@ -12,7 +12,11 @@ export const workspaceApi = {
   workflows: () => apiGet<Workflow[]>('/workflows'),
   workflow: (id: string) => apiGet<Workflow>(`/workflows/${id}`),
   async saveWorkflow(id: string | null, input: WorkflowInput) {
-    const saved = id ? await apiPut<Workflow>(`/workflows/${id}`, { json: input }) : await apiPost<Workflow>('/workflows', { json: input })
+    const payload = {
+      ...input,
+      edges: input.edges.map(({ id, source, target, sourceHandle }) => ({ id, source, target, sourceHandle })),
+    }
+    const saved = id ? await apiPut<Workflow>(`/workflows/${id}`, { json: payload }) : await apiPost<Workflow>('/workflows', { json: payload })
     return workspaceApi.workflow(saved.id)
   },
   async deleteWorkflow(id: string) { await api.delete(`/workflows/${id}`); const list = await workspaceApi.workflows(); if (list.some(w => w.id === id)) throw new Error('Delete was not confirmed'); return list },
@@ -23,7 +27,21 @@ export const workspaceApi = {
 }
 export async function errorMessage(error: unknown): Promise<string> {
   if (error instanceof HTTPError) {
-    try { const data = await error.response.clone().json(); return typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail ?? data) } catch { return `${error.response.status} ${error.response.statusText}` }
+    const data = error.data
+    if (data && typeof data === 'object' && 'detail' in data) {
+      const { detail } = data
+      if (typeof detail === 'string') return detail
+      if (Array.isArray(detail)) {
+        const messages = detail.flatMap(issue => {
+          if (!issue || typeof issue.msg !== 'string') return []
+          const location = Array.isArray(issue.loc) ? issue.loc as unknown[] : []
+          const field = (location[0] === 'body' ? location.slice(1) : location).join('.')
+          return [field ? `${field} — ${issue.msg}` : issue.msg]
+        })
+        if (messages.length) return messages.join(' · ')
+      }
+    }
+    return `${error.response.status} ${error.response.statusText}`
   }
   return error instanceof Error ? error.message : String(error)
 }

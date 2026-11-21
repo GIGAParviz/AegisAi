@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterEach, expect, it, vi } from 'vitest'
-import { workspaceApi } from './workspace-api'
+import { errorMessage, workspaceApi } from './workspace-api'
 import { setAuthTokens, clearAuthTokens } from './api'
 import { initialGraph } from './graph'
 afterEach(() => { vi.unstubAllGlobals(); clearAuthTokens() })
@@ -19,8 +19,16 @@ it('saves an agent with bearer authentication and reads the persisted target', a
   expect((fetcher.mock.calls[1][0] as Request).url).toBe('http://localhost:8000/agents/a1')
 })
 it('does not report success on validation errors', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ detail: 'Unknown model' }), { status: 422 })))
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ detail: 'Unknown model' }, { status: 422 })))
   await expect(workspaceApi.startRun('w1', 'hello')).rejects.toThrow()
+})
+it('shows the validation field and message from Ky without echoing input values', async () => {
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ detail: [
+    { loc: ['body', 'edges', 0, 'sourceHandle'], msg: 'Invalid branch', input: 'private draft' },
+  ] }, { status: 422 }))
+  vi.stubGlobal('fetch', fetcher)
+  const input = { ...initialGraph(), name: 'Echo', description: '' }
+  await expect(workspaceApi.saveWorkflow(null, input).catch(errorMessage)).resolves.toBe('edges.0.sourceHandle — Invalid branch')
 })
 it('saves strict workflow payloads and reads the saved target before returning', async () => {
   const input = { ...initialGraph(), name: 'Echo', description: '' }
@@ -30,7 +38,8 @@ it('saves strict workflow payloads and reads the saved target before returning',
     requests.push({ path: new URL(request.url).pathname, method: request.method, body: request.method === 'PUT' ? await request.json() : undefined })
     return Response.json(saved)
   }))
-  expect(await workspaceApi.saveWorkflow('w1', input)).toEqual(saved)
+  const draft = { ...input, edges: input.edges.map(edge => ({ ...edge, targetHandle: null })) }
+  expect(await workspaceApi.saveWorkflow('w1', draft)).toEqual(saved)
   expect(requests).toEqual([{ path: '/workflows/w1', method: 'PUT', body: input }, { path: '/workflows/w1', method: 'GET', body: undefined }])
 })
 it.each(['approve', 'reject'] as const)('posts an explicit %s decision and reads the exact run', async decision => {

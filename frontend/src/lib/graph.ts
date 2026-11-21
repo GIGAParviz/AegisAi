@@ -41,7 +41,10 @@ export function connectGraph(graph: Graph, connection: { source: string; target:
   const target = graph.nodes.find(n => n.id === connection.target)
   if (!source || !target || source.type === 'end' || target.type === 'start' || source.id === target.id) return graph.edges
   if (source.type === 'condition' && !['true', 'false'].includes(connection.sourceHandle ?? '')) return graph.edges
-  const edge = { ...connection, id: crypto.randomUUID(), sourceHandle: source.type === 'condition' ? connection.sourceHandle : null }
+  const edge: WorkflowEdge = {
+    id: crypto.randomUUID(), source: source.id, target: target.id,
+    sourceHandle: source.type === 'condition' ? connection.sourceHandle : null,
+  }
   return [...graph.edges.filter(e => e.source !== source.id || (source.type === 'condition' && e.sourceHandle !== edge.sourceHandle)), edge]
 }
 export function removeNode(graph: Graph, id: string): Graph {

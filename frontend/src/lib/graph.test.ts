@@ -11,9 +11,11 @@ describe('workflow graph', () => {
   it('replaces a single outgoing edge and removes dangling edges', () => {
     const graph = initialGraph()
     graph.nodes.push({ id: 'llm', type: 'llm', position: { x: 200, y: 100 }, config: { prompt: '{{input}}' } })
-    const edges = connectGraph(graph, { source: 'start', target: 'llm' })
+    const connection = { source: 'start', target: 'llm', sourceHandle: null, targetHandle: null }
+    const edges = connectGraph(graph, connection)
     expect(edges.filter(e => e.source === 'start')).toHaveLength(1)
     expect(edges[0].target).toBe('llm')
+    expect(edges[0]).not.toHaveProperty('targetHandle')
     expect(removeNode({ ...graph, edges }, 'llm').edges).toEqual([])
   })
   it('requires both named condition branches and rejects cycles', () => {
