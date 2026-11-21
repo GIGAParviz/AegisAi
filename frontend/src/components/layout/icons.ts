@@ -1,4 +1,7 @@
 import {
+  Bot,
+  GitBranch,
+  History,
   Activity,
   ClipboardCheck,
   FileCheck,
@@ -20,6 +23,9 @@ export const iconMap: Record<string, LucideIcon> = {
   Search,
   ClipboardCheck,
   FileCheck,
+  Bot,
+  GitBranch,
+  History,
   Activity,
   FlaskConical,
   Server,

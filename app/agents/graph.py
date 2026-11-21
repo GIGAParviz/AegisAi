@@ -444,6 +444,16 @@ class AgentGraph:
             return await _execute_get_document(arguments, session, user)
         raise ValueError(f"No execution handler registered for action: {action_name}")
 
+    async def execute_verified_action(self, proposal, user, session):
+        """Execute an explicitly policy-authorized action without LLM repair/replanning."""
+        state = {"proposal": proposal, "user": user, "session": session}
+        executed = await self._execute_node(state)
+        state.update(executed)
+        verified = await self._verify_node(state)
+        if executed.get("status") == "error" or verified.get("verification_errors"):
+            raise ValueError("Tool output failed verification")
+        return state["action_result"]
+
     async def _execute_node(self, state: AgentState) -> dict[str, Any]:
         proposal = state.get("proposal")
         if proposal is None:

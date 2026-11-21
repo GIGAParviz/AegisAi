@@ -20,8 +20,10 @@ export const navGroups: NavGroup[] = [
     key: 'workspace',
     items: [
       { key: 'dashboard', href: '/app/dashboard', icon: 'LayoutDashboard', status: 'live' },
-      { key: 'documents', href: '/app/documents', icon: 'FileText', status: 'live' },
       { key: 'chat', href: '/app/chat', icon: 'MessageSquare', status: 'live' },
+      { key: 'agents', href: '/app/agents', icon: 'Bot', status: 'live' },
+      { key: 'workflows', href: '/app/workflows', icon: 'GitBranch', status: 'live' },
+      { key: 'runs', href: '/app/runs', icon: 'History', status: 'live' },
     ],
   },
   {
@@ -31,7 +33,7 @@ export const navGroups: NavGroup[] = [
   {
     key: 'governance',
     items: [
-      { key: 'approvals', href: '/app/approvals', icon: 'ClipboardCheck', status: 'soon' },
+      { key: 'approvals', href: '/app/approvals', icon: 'ClipboardCheck', status: 'live' },
       { key: 'audit', href: '/app/audit', icon: 'FileCheck', status: 'soon' },
     ],
   },

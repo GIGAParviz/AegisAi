@@ -1,146 +1,43 @@
 'use client'
-
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { getAuthToken } from '@/lib/auth-token'
-import type { ChatMessage } from '@/lib/types'
-
+import type { ChatMessage, Citation } from '@/lib/types'
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
-
-interface StreamCallbacks {
-  onToken: (token: string) => void
-  onDone: (traceId: string) => void
-  onError: (error: string, traceId: string) => void
-}
-
-/** Parse SSE text blocks ("event: x\ndata: y\n\n") correctly — the previous
- *  implementation shifted lines mid-iteration and dropped events. */
-function parseSSEBlocks(buffer: string): { blocks: { event: string; data: string }[]; rest: string } {
-  const parts = buffer.split('\n\n')
-  const rest = parts.pop() ?? ''
-  const blocks: { event: string; data: string }[] = []
-  for (const block of parts) {
-    let event = 'message'
-    let data = ''
-    for (const line of block.split('\n')) {
-      if (line.startsWith('event:')) event = line.slice(6).trim()
-      else if (line.startsWith('data:')) data += line.slice(5).trim()
-    }
-    if (data) blocks.push({ event, data })
-  }
-  return { blocks, rest }
-}
-
+interface SendOptions { documentIds?: string[]; sessionId?: string; onToken?: (token: string) => void; onDone?: (trace: string) => void; onError?: (error: string, trace: string) => void }
 export function useChat() {
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [streaming, setStreaming] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [messages, setMessages] = useState<ChatMessage[]>([]), [streaming, setStreaming] = useState(false), [error, setError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
-
-  const sendMessage = useCallback(
-    async (content: string, callbacks?: Partial<StreamCallbacks>) => {
-      const history: ChatMessage[] = [...messages, { role: 'user', content }]
-      setMessages([...history, { role: 'assistant', content: '' }])
-      setStreaming(true)
-      setError(null)
-
-      abortRef.current = new AbortController()
-      let gotTokens = false
-      let lastTraceId = ''
-
+  useEffect(() => () => abortRef.current?.abort(), [])
+  const sendMessage = useCallback(async (content: string, options: SendOptions = {}) => {
+    if (abortRef.current) return
+    const history: ChatMessage[] = [...messages, { role: 'user', content, document_ids: options.documentIds }]
+    setMessages([...history, { role: 'assistant', content: '' }]); setStreaming(true); setError(null)
+    const controller = new AbortController(); abortRef.current = controller
+    let complete = false, errorTrace = ''
+    function updateLast(patch: Partial<ChatMessage>, token?: string) { setMessages(prev => prev.map((m, i) => i === prev.length - 1 ? { ...m, ...patch, content: token === undefined ? m.content : m.content + token } : m)) }
+    function parse(block: string) {
+      let event = 'message'; const data: string[] = []
+      for (const line of block.split(/\r?\n/)) { if (line.startsWith('event:')) event = line.slice(6).trim(); if (line.startsWith('data:')) data.push(line.slice(5).trimStart()) }
+      if (!data.length) return
+      const parsed = JSON.parse(data.join('\n'))
+      if (event === 'token') { const token = typeof parsed === 'string' ? parsed : parsed.token ?? ''; updateLast({}, token); options.onToken?.(token) }
+      if (event === 'done') { complete = true; updateLast({ trace_id: parsed.trace_id, citations: Array.isArray(parsed.citations) ? parsed.citations as Citation[] : [] }); options.onDone?.(parsed.trace_id ?? '') }
+      if (event === 'error') { errorTrace = parsed.trace_id ?? ''; updateLast({ trace_id: errorTrace }); throw new Error(parsed.error ?? 'Stream failed') }
+    }
+    try {
+      const token = getAuthToken()
+      const response = await fetch(`${BACKEND_URL}/chat/stream`, { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ messages: history.map(({ role, content }) => ({ role, content })), document_ids: options.documentIds ?? [], ...(options.sessionId ? { session_id: options.sessionId } : {}) }) })
+      if (!response.ok || !response.body) { let detail = `Request failed (${response.status})`; try { const data = await response.json(); if (typeof data.detail === 'string') detail = data.detail } catch {} throw new Error(detail) }
+      const reader = response.body.getReader(), decoder = new TextDecoder(); let buffer = ''
       try {
-        const token = getAuthToken()
-        const response = await fetch(`${BACKEND_URL}/chat/stream`, {
-          method: 'POST',
-          signal: abortRef.current.signal,
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'text/event-stream',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ messages: history }),
-        })
-
-        if (!response.ok || !response.body) {
-          throw new Error(`Request failed (${response.status})`)
-        }
-
-        const reader = response.body.getReader()
-        const decoder = new TextDecoder()
-        let buffer = ''
-
-        for (;;) {
-          const { done, value } = await reader.read()
-          if (done) break
-          buffer += decoder.decode(value, { stream: true })
-          const { blocks, rest } = parseSSEBlocks(buffer)
-          buffer = rest
-
-          for (const { event, data } of blocks) {
-            if (event === 'token') {
-              const piece = JSON.parse(data) as string
-              gotTokens = true
-              callbacks?.onToken?.(piece)
-            } else if (event === 'done') {
-              const parsed = JSON.parse(data) as { trace_id?: string }
-              lastTraceId = parsed.trace_id ?? ''
-              callbacks?.onDone?.(lastTraceId)
-            } else if (event === 'error') {
-              const parsed = JSON.parse(data) as { error?: string; trace_id?: string }
-              setError(parsed.error ?? 'stream_failed')
-              callbacks?.onError?.(parsed.error ?? 'stream_failed', parsed.trace_id ?? '')
-            }
-          }
-        }
-      } catch (err) {
-        if (err instanceof Error && err.name !== 'AbortError') {
-          setError(err.message)
-          callbacks?.onError?.(err.message, lastTraceId)
-        }
-      } finally {
-        // Drop an empty assistant bubble if the stream produced nothing
-        if (!gotTokens) {
-          setMessages((prev) => {
-            const copy = [...prev]
-            const last = copy[copy.length - 1]
-            if (last?.role === 'assistant' && last.content === '') copy.pop()
-            return copy
-          })
-        }
-        setStreaming(false)
-        abortRef.current = null
-      }
-    },
-    [messages],
-  )
-
-  const stopStreaming = useCallback(() => {
-    abortRef.current?.abort()
-    setStreaming(false)
-  }, [])
-
-  const appendAssistantToken = useCallback((tokenPiece: string) => {
-    setMessages((prev) => {
-      const copy = [...prev]
-      const last = copy[copy.length - 1]
-      if (last?.role === 'assistant') {
-        copy[copy.length - 1] = { ...last, content: last.content + tokenPiece }
-      }
-      return copy
-    })
-  }, [])
-
-  const clearMessages = useCallback(() => {
-    setMessages([])
-    setError(null)
-  }, [])
-
-  return {
-    messages,
-    streaming,
-    error,
-    sendMessage,
-    stopStreaming,
-    appendAssistantToken,
-    clearMessages,
-  }
+        for (;;) { const { done, value } = await reader.read(); if (done) break; buffer += decoder.decode(value, { stream: true }); let match: RegExpExecArray | null; while ((match = /\r?\n\r?\n/.exec(buffer))) { parse(buffer.slice(0, match.index)); buffer = buffer.slice(match.index + match[0].length) } }
+        buffer += decoder.decode(); if (buffer.trim()) parse(buffer)
+      } finally { reader.releaseLock() }
+      if (!complete) throw new Error('Stream ended before completion')
+    } catch (e) { if (!controller.signal.aborted) { const message = e instanceof Error ? e.message : String(e); setError(message); options.onError?.(message, errorTrace) } }
+    finally { setStreaming(false); abortRef.current = null }
+  }, [messages])
+  const stopStreaming = useCallback(() => { abortRef.current?.abort() }, [])
+  const clearMessages = useCallback(() => { if (!abortRef.current) { setMessages([]); setError(null) } }, [])
+  return { messages, streaming, error, sendMessage, stopStreaming, clearMessages }
 }

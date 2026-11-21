@@ -51,6 +51,7 @@ class VectorStore(Protocol):
         query: str,
         k: int = 5,
         owner_id: str | None = None,
+        document_ids: Sequence[str] | None = None,
     ) -> list[SearchResult]: ...
 
 
@@ -200,6 +201,7 @@ class QdrantVectorStore:
         query: str,
         k: int,
         owner_id: str | None = None,
+        document_ids: Sequence[str] | None = None,
     ) -> list[SearchResult]:
         from qdrant_client import models
 
@@ -241,15 +243,18 @@ class QdrantVectorStore:
             "limit": candidate_limit,
             "with_payload": True,
         }
+        conditions = []
         if owner_id is not None:
-            query_kwargs["query_filter"] = models.Filter(
-                must=[
-                    models.FieldCondition(
-                        key="owner_id",
-                        match=models.MatchValue(value=owner_id),
-                    )
-                ]
-            )
+            conditions.append(models.FieldCondition(key="owner_id", match=models.MatchValue(value=owner_id)))
+        if document_ids is not None:
+            if not document_ids:
+                return []
+            conditions.append(models.FieldCondition(key="doc_id", match=models.MatchAny(any=list(document_ids))))
+        if conditions:
+            query_kwargs["query_filter"] = models.Filter(must=conditions)
+            # Filter every prefetch too: unrelated chunks never enter retrieval/reranking.
+            for prefetch in query_kwargs["prefetch"]:
+                prefetch.filter = query_kwargs["query_filter"]
 
         response = await asyncio.to_thread(self.client.query_points, **query_kwargs)
 
@@ -306,6 +311,7 @@ class FakeVectorStore:
         query: str,
         k: int = 5,
         owner_id: str | None = None,
+        document_ids: Sequence[str] | None = None,
     ) -> list[SearchResult]:
         query_lower = query.lower()
 
@@ -314,6 +320,7 @@ class FakeVectorStore:
             for chunk in self.chunks
             if query_lower in chunk.text.lower()
             and (owner_id is None or chunk.owner_id == owner_id)
+            and (document_ids is None or chunk.document_id in document_ids)
         ]
 
         return [
